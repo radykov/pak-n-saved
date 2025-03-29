@@ -262,24 +262,15 @@ const WordGame = () => {
         setSelectedWord(word);
     };
 
-    const rotateWord = useCallback((word, direction) => {
+    const rotateWord = useCallback((word) => {
         if (word.isPlaced) return;
 
         setWords(prev => prev.map(w => {
             if (w.id !== word.id) return w;
 
-            const newOrientation = w.orientation === 'horizontal' ? 'vertical' : 'horizontal';
-            let newText = w.text;
-
-            if (direction === 'clockwise') {
-                // Rotate text clockwise
-                newText = w.text.split('').reverse().join('');
-            }
-
             return {
                 ...w,
-                orientation: newOrientation,
-                text: newText
+                orientation: w.orientation === 'horizontal' ? 'vertical' : 'horizontal'
             };
         }));
     }, []);
@@ -418,15 +409,10 @@ const WordGame = () => {
 
             {selectedWord && !selectedWord.isPlaced && (
                 <div style={rotationControlsStyle}>
-                    <RotateCcw
-                        size={32}
-                        style={iconStyle}
-                        onClick={() => rotateWord(selectedWord, 'counterclockwise')}
-                    />
                     <RotateCw
                         size={32}
                         style={iconStyle}
-                        onClick={() => rotateWord(selectedWord, 'clockwise')}
+                        onClick={() => rotateWord(selectedWord)}
                     />
                 </div>
             )}
