@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop, useDragLayer } from 'react-dnd';
 import { theme } from '../styles';
 
 const GRID_SIZE = 5;
@@ -87,6 +87,40 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
         >
             {letter || (previewWord?.word?.text?.[previewWord.index])}
             {isFirstLetter && <span style={{ color: 'red', position: 'absolute', top: 2, right: 2 }}>*</span>}
+        </div>
+    );
+};
+
+const CustomDragLayer = () => {
+    const { isDragging, item, currentOffset } = useDragLayer((monitor) => ({
+        item: monitor.getItem(),
+        currentOffset: monitor.getSourceClientOffset(),
+        isDragging: monitor.isDragging(),
+    }));
+
+    if (!isDragging || !currentOffset) {
+        return null;
+    }
+
+    const style = {
+        position: 'fixed',
+        left: currentOffset.x,
+        top: currentOffset.y,
+        padding: '8px 16px',
+        background: '#fff',
+        border: '2px solid #ddd',
+        borderRadius: '4px',
+        cursor: 'move',
+        opacity: 0.8,
+        boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+        transform: 'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        zIndex: 1000,
+    };
+
+    return (
+        <div style={style}>
+            {item.type === 'PLACED_WORD' ? item.word.text : item.text}
         </div>
     );
 };
@@ -234,6 +268,7 @@ const WordGame = () => {
 
     return (
         <div style={{ padding: '20px' }}>
+            <CustomDragLayer />
             <div
                 id="grid"
                 ref={drop}
