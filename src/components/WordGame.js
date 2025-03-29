@@ -6,7 +6,6 @@ import { RotateCw } from 'lucide-react';
 
 const GRID_SIZE = 5;
 const CELL_SIZE = 60;
-const SNAP_THRESHOLD = 20; // pixels within which to snap
 
 const initialWords = [
     { id: '1', text: 'REACT', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
@@ -384,8 +383,6 @@ const WordGame = () => {
         if (!previewPosition?.word) return null;
 
         const { word, x: startX, y: startY } = previewPosition;
-        const dx = word.orientation === 'horizontal' ? 1 : 0;
-        const dy = word.orientation === 'vertical' ? 1 : 0;
 
         // Calculate the relative position from the start of the word
         const relativeX = x - startX;
