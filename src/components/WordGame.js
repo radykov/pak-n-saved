@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useDrag, useDrop, useDragLayer } from 'react-dnd';
+import { getEmptyImage } from 'react-dnd-html5-backend';
 import { theme } from '../styles';
 import { RotateCw, RotateCcw } from 'lucide-react';
 
@@ -15,7 +16,7 @@ const initialWords = [
 ];
 
 const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) => {
-    const [{ isDragging }, drag] = useDrag({
+    const [{ isDragging }, drag, preview] = useDrag({
         type: 'WORD',
         item: () => {
             onSelect(word);
@@ -29,6 +30,10 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
         },
     });
 
+    useEffect(() => {
+        preview(getEmptyImage(), { captureDraggingState: true });
+    }, [preview]);
+
     const style = {
         padding: '8px 16px',
         margin: '4px',
@@ -36,7 +41,7 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
         border: '2px solid #ddd',
         borderRadius: '4px',
         cursor: 'move',
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0 : 1,
         transition: 'all 0.2s ease',
         boxShadow: isDragging ? '0 4px 8px rgba(0,0,0,0.2)' : 'none',
         transform: isDragging ? 'scale(1.05)' : 'scale(1)',
@@ -62,7 +67,7 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
 };
 
 const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragStart, onDragEnd, word, isSelected, onSelect }) => {
-    const [{ isDragging }, drag] = useDrag({
+    const [{ isDragging }, drag, preview] = useDrag({
         type: 'PLACED_WORD',
         item: { type: 'PLACED_WORD', x, y, letter, word },
         collect: (monitor) => ({
@@ -72,6 +77,12 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
             onDragEnd(item, monitor.getDropResult());
         },
     });
+
+    useEffect(() => {
+        if (letter) {
+            preview(getEmptyImage(), { captureDraggingState: true });
+        }
+    }, [preview, letter]);
 
     const isPartOfSelectedWord = isSelected && word && (
         (word.orientation === 'horizontal' && y === word.y && x >= word.x && x < word.x + word.text.length) ||
@@ -96,7 +107,7 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
         position: 'relative',
         color: letter ? '#000' : (previewWord ? '#999' : '#000'),
         cursor: letter ? 'move' : 'default',
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0 : 1,
         transition: 'all 0.2s ease',
         boxShadow: isDragging ? '0 4px 8px rgba(0,0,0,0.2)' : 'none',
         transform: isDragging ? 'scale(1.05)' : 'scale(1)',
@@ -125,6 +136,9 @@ const CustomDragLayer = () => {
         return null;
     }
 
+    const word = item.type === 'PLACED_WORD' ? item.word : item;
+    const isVertical = word.orientation === 'vertical';
+
     const style = {
         position: 'fixed',
         left: currentOffset.x,
@@ -139,11 +153,19 @@ const CustomDragLayer = () => {
         transform: 'translate(-50%, -50%)',
         pointerEvents: 'none',
         zIndex: 1000,
+        writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
+        textOrientation: isVertical ? 'mixed' : 'initial',
+        height: isVertical ? `${word.text.length * 24}px` : 'auto',
+        width: isVertical ? 'auto' : `${word.text.length * 16}px`,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        lineHeight: '1',
     };
 
     return (
         <div style={style}>
-            {item.type === 'PLACED_WORD' ? item.word.text : item.text}
+            {word.text}
         </div>
     );
 };
@@ -232,7 +254,7 @@ const WordGame = () => {
                 // Check if we can place the word in the new position
                 if (canPlaceWord(wordToPlace, x, y, wordToPlace.orientation)) {
                     placeWord(wordToPlace, x, y, wordToPlace.orientation);
-                    setSelectedWord(null); // Deselect the word when successfully placed
+                    setSelectedWord(null);
                 } else {
                     // If we can't place it and it was a placed word, we need to restore it
                     if (item.type === 'PLACED_WORD') {
@@ -244,30 +266,45 @@ const WordGame = () => {
         },
         hover: (item, monitor) => {
             const offset = monitor.getClientOffset();
+            if (!offset) {
+                setPreviewPosition(null);
+                return;
+            }
+
             const gridElement = document.getElementById('grid');
-            if (!gridElement) return;
+            if (!gridElement) {
+                setPreviewPosition(null);
+                return;
+            }
 
             const gridRect = gridElement.getBoundingClientRect();
             const x = Math.floor((offset.x - gridRect.left) / CELL_SIZE);
             const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
 
-            if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
-                const wordToPreview = item.type === 'PLACED_WORD' ? item.word : item;
-                if (!wordToPreview) return;
+            // Clear preview if outside grid bounds
+            if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) {
+                setPreviewPosition(null);
+                return;
+            }
 
-                // For placed words, temporarily remove them from the grid for preview
+            const wordToPreview = item.type === 'PLACED_WORD' ? item.word : item;
+            if (!wordToPreview) {
+                setPreviewPosition(null);
+                return;
+            }
+
+            // For placed words, temporarily remove them from the grid for preview
+            if (item.type === 'PLACED_WORD') {
+                removeWord(wordToPreview);
+            }
+
+            if (canPlaceWord(wordToPreview, x, y, wordToPreview.orientation)) {
+                setPreviewPosition({ x, y, word: wordToPreview });
+            } else {
+                setPreviewPosition(null);
+                // Restore the word if we can't place it here
                 if (item.type === 'PLACED_WORD') {
-                    removeWord(wordToPreview);
-                }
-
-                if (canPlaceWord(wordToPreview, x, y, wordToPreview.orientation)) {
-                    setPreviewPosition({ x, y, word: wordToPreview });
-                } else {
-                    setPreviewPosition(null);
-                    // Restore the word if we can't place it here
-                    if (item.type === 'PLACED_WORD') {
-                        placeWord(wordToPreview, wordToPreview.x, wordToPreview.y, wordToPreview.orientation);
-                    }
+                    placeWord(wordToPreview, wordToPreview.x, wordToPreview.y, wordToPreview.orientation);
                 }
             }
         },
