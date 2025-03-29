@@ -66,7 +66,7 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
     );
 };
 
-const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragStart, onDragEnd, word, isSelected, onSelect }) => {
+const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragStart, onDragEnd, word, isSelected, onSelect, canPlaceWord }) => {
     const [{ isDragging }, drag, preview] = useDrag({
         type: 'PLACED_WORD',
         item: { type: 'PLACED_WORD', x, y, letter, word },
@@ -94,6 +94,8 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
         (previewWord.word.orientation === 'vertical' && x === previewWord.x && y >= previewWord.y && y < previewWord.y + previewWord.word.text.length)
     );
 
+    const isInvalidPreview = isPartOfPreview && !canPlaceWord(previewWord.word, previewWord.x, previewWord.y, previewWord.word.orientation);
+
     const style = {
         width: CELL_SIZE,
         height: CELL_SIZE,
@@ -103,7 +105,9 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
         justifyContent: 'center',
         fontSize: '24px',
         fontWeight: 'bold',
-        background: isPartOfPreview || isPartOfSelectedWord ? '#f7d794' : '#fff',
+        background: isPartOfPreview
+            ? (isInvalidPreview ? '#ffebee' : '#f7d794')  // Light red for invalid, yellow for valid
+            : (isPartOfSelectedWord ? '#f7d794' : '#fff'),
         position: 'relative',
         color: letter ? '#000' : (previewWord ? '#999' : '#000'),
         cursor: letter ? 'move' : 'default',
@@ -315,14 +319,12 @@ const WordGame = () => {
                 removeWord(wordToPreview);
             }
 
-            if (canPlaceWord(wordToPreview, x, y, wordToPreview.orientation)) {
-                setPreviewPosition({ x, y, word: wordToPreview });
-            } else {
-                setPreviewPosition(null);
-                // Restore the word if we can't place it here
-                if (item.type === 'PLACED_WORD') {
-                    placeWord(wordToPreview, wordToPreview.x, wordToPreview.y, wordToPreview.orientation);
-                }
+            // Always show preview, regardless of whether the word can be placed
+            setPreviewPosition({ x, y, word: wordToPreview });
+
+            // If we can't place it here and it was a placed word, restore it
+            if (!canPlaceWord(wordToPreview, x, y, wordToPreview.orientation) && item.type === 'PLACED_WORD') {
+                placeWord(wordToPreview, wordToPreview.x, wordToPreview.y, wordToPreview.orientation);
             }
         },
     });
@@ -483,6 +485,7 @@ const WordGame = () => {
                                 word={word}
                                 isSelected={word && selectedWord?.id === word.id}
                                 onSelect={handleWordSelect}
+                                canPlaceWord={canPlaceWord}
                             />
                         );
                     })
