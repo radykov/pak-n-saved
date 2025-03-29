@@ -1,8 +1,8 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDrag, useDrop, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { theme } from '../styles';
-import { RotateCw, RotateCcw } from 'lucide-react';
+import { RotateCw } from 'lucide-react';
 
 const GRID_SIZE = 5;
 const CELL_SIZE = 60;

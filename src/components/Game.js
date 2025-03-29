@@ -1,13 +1,9 @@
 // /src/components/Game.js
-import React, { useEffect, useState } from 'react';
-import WordButton from './WordButton';
-import { useLevel } from '../contexts/LevelContext';
-import wordsData from '../words.json';
+import React from 'react';
 import { mobileView } from '../styles';
 import WordGame from './WordGame'
 
 const Game = () => {
-    const { currentLevel, levelInfo, updateLevelInfo } = useLevel();
     return (
         <div
             style={{
