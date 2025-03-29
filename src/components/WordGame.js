@@ -198,20 +198,27 @@ const WordGame = () => {
             const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
 
             if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
-                if (item.type === 'WORD' && canPlaceWord(item, x, y, item.orientation)) {
-                    placeWord(item, x, y, item.orientation);
+                const wordToPlace = item.type === 'PLACED_WORD' ? item.word : item;
+                if (!wordToPlace) return;
+
+                // For placed words, remove them first
+                if (item.type === 'PLACED_WORD') {
+                    removeWord(wordToPlace);
+                }
+
+                // Check if we can place the word in the new position
+                if (canPlaceWord(wordToPlace, x, y, wordToPlace.orientation)) {
+                    placeWord(wordToPlace, x, y, wordToPlace.orientation);
+                } else {
+                    // If we can't place it and it was a placed word, we need to restore it
+                    if (item.type === 'PLACED_WORD') {
+                        placeWord(wordToPlace, wordToPlace.x, wordToPlace.y, wordToPlace.orientation);
+                    }
                 }
             }
-            // Clear preview on drop
             setPreviewPosition(null);
         },
         hover: (item, monitor) => {
-            // Only show preview for new words being dragged from the list
-            if (item.type !== 'WORD') {
-                setPreviewPosition(null);
-                return;
-            }
-
             const offset = monitor.getClientOffset();
             const gridElement = document.getElementById('grid');
             if (!gridElement) return;
@@ -221,10 +228,22 @@ const WordGame = () => {
             const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
 
             if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
-                if (canPlaceWord(item, x, y, item.orientation)) {
-                    setPreviewPosition({ x, y, word: item });
+                const wordToPreview = item.type === 'PLACED_WORD' ? item.word : item;
+                if (!wordToPreview) return;
+
+                // For placed words, temporarily remove them from the grid for preview
+                if (item.type === 'PLACED_WORD') {
+                    removeWord(wordToPreview);
+                }
+
+                if (canPlaceWord(wordToPreview, x, y, wordToPreview.orientation)) {
+                    setPreviewPosition({ x, y, word: wordToPreview });
                 } else {
                     setPreviewPosition(null);
+                    // Restore the word if we can't place it here
+                    if (item.type === 'PLACED_WORD') {
+                        placeWord(wordToPreview, wordToPreview.x, wordToPreview.y, wordToPreview.orientation);
+                    }
                 }
             }
         },
