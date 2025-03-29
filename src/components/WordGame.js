@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useDrag, useDrop, useDragLayer } from 'react-dnd';
 import { theme } from '../styles';
+import { RotateCw, RotateCcw } from 'lucide-react';
 
 const GRID_SIZE = 5;
 const CELL_SIZE = 60;
@@ -36,6 +37,14 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
         transition: 'all 0.2s ease',
         boxShadow: isDragging ? '0 4px 8px rgba(0,0,0,0.2)' : 'none',
         transform: isDragging ? 'scale(1.05)' : 'scale(1)',
+        writingMode: word.orientation === 'vertical' ? 'vertical-rl' : 'horizontal-tb',
+        textOrientation: word.orientation === 'vertical' ? 'mixed' : 'initial',
+        height: word.orientation === 'vertical' ? `${word.text.length * 24}px` : 'auto',
+        width: word.orientation === 'horizontal' ? `${word.text.length * 16}px` : 'auto',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        lineHeight: '1',
     };
 
     return (
@@ -253,15 +262,27 @@ const WordGame = () => {
         setSelectedWord(word);
     };
 
-    const handleWordRotate = (word) => {
-        if (!word.isPlaced) {
-            setWords(prev => prev.map(w =>
-                w.id === word.id
-                    ? { ...w, orientation: w.orientation === 'horizontal' ? 'vertical' : 'horizontal' }
-                    : w
-            ));
-        }
-    };
+    const rotateWord = useCallback((word, direction) => {
+        if (word.isPlaced) return;
+
+        setWords(prev => prev.map(w => {
+            if (w.id !== word.id) return w;
+
+            const newOrientation = w.orientation === 'horizontal' ? 'vertical' : 'horizontal';
+            let newText = w.text;
+
+            if (direction === 'clockwise') {
+                // Rotate text clockwise
+                newText = w.text.split('').reverse().join('');
+            }
+
+            return {
+                ...w,
+                orientation: newOrientation,
+                text: newText
+            };
+        }));
+    }, []);
 
     const getPreviewLetter = useCallback((x, y, previewPosition) => {
         if (!previewPosition?.word) return null;
@@ -290,6 +311,25 @@ const WordGame = () => {
             removeWord(item.word);
         }
     }, [removeWord]);
+
+    const rotationControlsStyle = {
+        display: 'flex',
+        gap: '16px',
+        justifyContent: 'center',
+        marginTop: '20px',
+        padding: '10px',
+    };
+
+    const iconStyle = {
+        cursor: 'pointer',
+        color: theme.colors.arrowEnabled,
+        transition: 'all 0.2s ease',
+        padding: '8px',
+        borderRadius: '4px',
+        '&:hover': {
+            transform: 'scale(1.1)',
+        }
+    };
 
     return (
         <div style={{ padding: '20px' }}>
@@ -357,6 +397,7 @@ const WordGame = () => {
                     justifyContent: 'center',
                     marginTop: '20px',
                     gap: '8px',
+                    alignItems: 'flex-start',
                 }}
             >
                 {words.filter(word => !word.isPlaced).map(word => (
@@ -374,6 +415,21 @@ const WordGame = () => {
                     />
                 ))}
             </div>
+
+            {selectedWord && !selectedWord.isPlaced && (
+                <div style={rotationControlsStyle}>
+                    <RotateCcw
+                        size={32}
+                        style={iconStyle}
+                        onClick={() => rotateWord(selectedWord, 'counterclockwise')}
+                    />
+                    <RotateCw
+                        size={32}
+                        style={iconStyle}
+                        onClick={() => rotateWord(selectedWord, 'clockwise')}
+                    />
+                </div>
+            )}
         </div>
     );
 };
