@@ -202,9 +202,15 @@ const WordGame = () => {
                     placeWord(item, x, y, item.orientation);
                 }
             }
+            // Clear preview on drop
+            setPreviewPosition(null);
         },
         hover: (item, monitor) => {
-            if (item.type !== 'WORD') return;
+            // Only show preview for new words being dragged from the list
+            if (item.type !== 'WORD') {
+                setPreviewPosition(null);
+                return;
+            }
 
             const offset = monitor.getClientOffset();
             const gridElement = document.getElementById('grid');
