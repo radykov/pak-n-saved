@@ -17,7 +17,10 @@ const initialWords = [
 const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) => {
     const [{ isDragging }, drag] = useDrag({
         type: 'WORD',
-        item: { type: 'WORD', ...word },
+        item: () => {
+            onSelect(word);
+            return { type: 'WORD', ...word };
+        },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
@@ -218,6 +221,7 @@ const WordGame = () => {
                 // Check if we can place the word in the new position
                 if (canPlaceWord(wordToPlace, x, y, wordToPlace.orientation)) {
                     placeWord(wordToPlace, x, y, wordToPlace.orientation);
+                    setSelectedWord(null); // Deselect the word when successfully placed
                 } else {
                     // If we can't place it and it was a placed word, we need to restore it
                     if (item.type === 'PLACED_WORD') {
@@ -313,7 +317,8 @@ const WordGame = () => {
 
     const iconStyle = {
         cursor: 'pointer',
-        color: theme.colors.arrowEnabled,
+        color: theme.colors.default,
+        backgroundColor: theme.colors.arrowEnabled,
         transition: 'all 0.2s ease',
         padding: '8px',
         borderRadius: '4px',
