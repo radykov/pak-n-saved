@@ -61,7 +61,7 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
     );
 };
 
-const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragStart, onDragEnd, word, isSelected }) => {
+const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragStart, onDragEnd, word, isSelected, onSelect }) => {
     const [{ isDragging }, drag] = useDrag({
         type: 'PLACED_WORD',
         item: { type: 'PLACED_WORD', x, y, letter, word },
@@ -106,6 +106,7 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
         <div
             ref={letter ? drag : null}
             style={style}
+            onClick={() => word && onSelect(word)}
         >
             {letter || (previewWord?.word?.text?.[previewWord.index])}
             {isFirstLetter && <span style={{ color: 'red', position: 'absolute', top: 2, right: 2 }}>*</span>}
@@ -391,6 +392,7 @@ const WordGame = () => {
                                 onDragEnd={handleGridCellDragEnd}
                                 word={word}
                                 isSelected={word && selectedWord?.id === word.id}
+                                onSelect={handleWordSelect}
                             />
                         );
                     })
