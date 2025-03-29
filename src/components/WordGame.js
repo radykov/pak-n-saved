@@ -315,6 +315,8 @@ const WordGame = () => {
     const handleGridCellDragEnd = useCallback((item, result) => {
         if (!result && item.word) {
             removeWord(item.word);
+            setPreviewPosition(null);
+            setSelectedWord(null);
         }
     }, [removeWord]);
 
