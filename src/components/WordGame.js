@@ -181,11 +181,28 @@ const WordGame = () => {
         const dx = orientation === 'horizontal' ? 1 : 0;
         const dy = orientation === 'vertical' ? 1 : 0;
 
+        // Get the current word's positions to ignore them
+        const currentPositions = new Set();
+        if (word.isPlaced) {
+            const currentDx = word.orientation === 'horizontal' ? 1 : 0;
+            const currentDy = word.orientation === 'vertical' ? 1 : 0;
+            for (let i = 0; i < wordLength; i++) {
+                const posX = word.x + (currentDx * i);
+                const posY = word.y + (currentDy * i);
+                currentPositions.add(`${posX},${posY}`);
+            }
+        }
+
         for (let i = 0; i < wordLength; i++) {
             const newX = x + (dx * i);
             const newY = y + (dy * i);
 
             if (newX >= GRID_SIZE || newY >= GRID_SIZE) return false;
+
+            // If this position is part of the current word's position, ignore it
+            if (currentPositions.has(`${newX},${newY}`)) continue;
+
+            // Otherwise check if the position is empty
             if (grid[newY][newX] !== '') return false;
         }
         return true;
@@ -315,17 +332,51 @@ const WordGame = () => {
     };
 
     const rotateWord = useCallback((word) => {
-        if (word.isPlaced) return;
+        const rotatedWord = {
+            ...word,
+            orientation: word.orientation === 'horizontal' ? 'vertical' : 'horizontal'
+        };
 
-        setWords(prev => prev.map(w => {
-            if (w.id !== word.id) return w;
+        if (word.isPlaced) {
+            // Clear the old word from the grid
+            const dx = word.orientation === 'horizontal' ? 1 : 0;
+            const dy = word.orientation === 'vertical' ? 1 : 0;
+            for (let i = 0; i < word.text.length; i++) {
+                const x = word.x + (dx * i);
+                const y = word.y + (dy * i);
+                setGrid(prev => {
+                    const newGrid = [...prev];
+                    newGrid[y] = [...newGrid[y]];
+                    newGrid[y][x] = '';
+                    return newGrid;
+                });
+            }
 
-            return {
-                ...w,
-                orientation: w.orientation === 'horizontal' ? 'vertical' : 'horizontal'
-            };
-        }));
-    }, []);
+            // Check if the rotated word can be placed
+            if (canPlaceWord(rotatedWord, word.x, word.y, rotatedWord.orientation)) {
+                // Place the rotated word
+                const newDx = rotatedWord.orientation === 'horizontal' ? 1 : 0;
+                const newDy = rotatedWord.orientation === 'vertical' ? 1 : 0;
+                for (let i = 0; i < word.text.length; i++) {
+                    const x = word.x + (newDx * i);
+                    const y = word.y + (newDy * i);
+                    setGrid(prev => {
+                        const newGrid = [...prev];
+                        newGrid[y] = [...newGrid[y]];
+                        newGrid[y][x] = word.text[i];
+                        return newGrid;
+                    });
+                }
+                setWords(prev => prev.map(w => w.id === word.id ? { ...rotatedWord, isPlaced: true } : w));
+            } else {
+                // Move to bottom list if can't be placed
+                setWords(prev => prev.map(w => w.id === word.id ? { ...rotatedWord, isPlaced: false, x: null, y: null } : w));
+            }
+        } else {
+            // Just rotate the unplaced word
+            setWords(prev => prev.map(w => w.id === word.id ? rotatedWord : w));
+        }
+    }, [canPlaceWord, setGrid, setWords]);
 
     const getPreviewLetter = useCallback((x, y, previewPosition) => {
         if (!previewPosition?.word) return null;
@@ -464,7 +515,7 @@ const WordGame = () => {
                 ))}
             </div>
 
-            {selectedWord && !selectedWord.isPlaced && (
+            {selectedWord && (
                 <div style={rotationControlsStyle}>
                     <RotateCw
                         size={32}
