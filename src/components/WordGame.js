@@ -61,7 +61,7 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
     );
 };
 
-const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragStart, onDragEnd, word }) => {
+const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragStart, onDragEnd, word, isSelected }) => {
     const [{ isDragging }, drag] = useDrag({
         type: 'PLACED_WORD',
         item: { type: 'PLACED_WORD', x, y, letter, word },
@@ -73,6 +73,16 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
         },
     });
 
+    const isPartOfSelectedWord = isSelected && word && (
+        (word.orientation === 'horizontal' && y === word.y && x >= word.x && x < word.x + word.text.length) ||
+        (word.orientation === 'vertical' && x === word.x && y >= word.y && y < word.y + word.text.length)
+    );
+
+    const isPartOfPreview = previewWord && (
+        (previewWord.word.orientation === 'horizontal' && y === previewWord.y && x >= previewWord.x && x < previewWord.x + previewWord.word.text.length) ||
+        (previewWord.word.orientation === 'vertical' && x === previewWord.x && y >= previewWord.y && y < previewWord.y + previewWord.word.text.length)
+    );
+
     const style = {
         width: CELL_SIZE,
         height: CELL_SIZE,
@@ -82,7 +92,7 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
         justifyContent: 'center',
         fontSize: '24px',
         fontWeight: 'bold',
-        background: isPreview ? '#f7d794' : '#fff',
+        background: isPartOfPreview || isPartOfSelectedWord ? '#f7d794' : '#fff',
         position: 'relative',
         color: letter ? '#000' : (previewWord ? '#999' : '#000'),
         cursor: letter ? 'move' : 'default',
@@ -298,7 +308,7 @@ const WordGame = () => {
         }
 
         const index = word.orientation === 'horizontal' ? relativeX : relativeY;
-        return { word, index };
+        return { word, index, x: startX, y: startY };
     }, []);
 
     const handleGridCellDragEnd = useCallback((item, result) => {
@@ -380,6 +390,7 @@ const WordGame = () => {
                                 onDragStart={() => { }}
                                 onDragEnd={handleGridCellDragEnd}
                                 word={word}
+                                isSelected={word && selectedWord?.id === word.id}
                             />
                         );
                     })
