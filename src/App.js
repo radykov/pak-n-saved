@@ -14,12 +14,13 @@ const HTML5toTouch = {
     {
       id: 'html5',
       backend: HTML5Backend,
-      preview: true
+      preview: true,
+      options: { entableMouseEvents: true }
     },
     {
       id: 'touch',
       backend: TouchBackend,
-      options: { enableMouseEvents: true, delayTouchStart: 150 },
+      options: { enableTouchEvents: true },
       preview: true
     }
   ]
@@ -27,11 +28,6 @@ const HTML5toTouch = {
 function App() {
   return (
     <DndProvider backend={MultiBackend} options={HTML5toTouch}>
-
-      {/* // </DndProvider> / <DndProvider backend={TouchBackend} options={{
-    //   enableMouseEvents: true, enableTouchEvents: true, delayTouchStart: 200,
-    //   delay: 200
-    // }}>     */}
       < LevelProvider >
         < TopHeader />
         <SystemMessage />
