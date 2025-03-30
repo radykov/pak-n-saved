@@ -14,6 +14,15 @@ const initialWords = [
     { id: '4', text: 'GAME', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
 ];
 
+// Add these styles to prevent touch scrolling and improve mobile interaction
+const onTouchStart = (e) => {
+    e.preventDefault();
+};
+
+const TOUCH_STYLE = {
+    touchAction: 'none'
+}
+
 const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) => {
     const [{ isDragging }, drag, preview] = useDrag({
         type: 'WORD',
@@ -52,6 +61,7 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
         alignItems: 'center',
         justifyContent: 'center',
         lineHeight: '1',
+        ...TOUCH_STYLE
     };
 
     return (
@@ -59,6 +69,7 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
             ref={drag}
             style={style}
             onClick={() => onSelect(word)}
+            onTouchStart={onTouchStart}
         >
             {word.text}
         </div>
@@ -114,6 +125,7 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
         transition: 'all 0.2s ease',
         boxShadow: isDragging ? '0 4px 8px rgba(0,0,0,0.2)' : 'none',
         transform: isDragging ? 'scale(1.05)' : 'scale(1)',
+        ...TOUCH_STYLE
     };
 
     return (
@@ -121,6 +133,7 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
             ref={letter ? drag : null}
             style={style}
             onClick={() => word && onSelect(word)}
+            onTouchStart={onTouchStart}
         >
             {letter || (previewWord?.word?.text?.[previewWord.index])}
             {isFirstLetter && <span style={{ color: 'red', position: 'absolute', top: 2, right: 2 }}>*</span>}
