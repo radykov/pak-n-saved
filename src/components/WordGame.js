@@ -43,7 +43,7 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
     }, [preview]);
 
     const style = {
-        padding: '8px 16px',
+        padding: word.orientation === 'horizontal' ? '8px 16px' : '16px 8px',
         margin: '4px',
         background: isSelected ? '#f7d794' : '#fff',
         border: '2px solid #ddd',
@@ -55,8 +55,8 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
         transform: isDragging ? 'scale(1.05)' : 'scale(1)',
         writingMode: word.orientation === 'vertical' ? 'vertical-rl' : 'horizontal-tb',
         textOrientation: word.orientation === 'vertical' ? 'mixed' : 'initial',
-        height: word.orientation === 'vertical' ? `${word.text.length * 24}px` : 'auto',
-        width: word.orientation === 'horizontal' ? `${word.text.length * 16}px` : 'auto',
+        height: 'auto',
+        width: 'auto',
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
