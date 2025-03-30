@@ -65,7 +65,7 @@ const usePlaceWord = (grid, setGrid, words, setWords) => {
                 ? { ...w, isPlaced: true, x, y, orientation }
                 : w
         ));
-    }, [grid, setGrid, words, setWords]);
+    }, [grid, setGrid, setWords]);
 
     return placeWord;
 };
@@ -73,6 +73,9 @@ const usePlaceWord = (grid, setGrid, words, setWords) => {
 // Custom hook for removing a word
 const useRemoveWord = (grid, setGrid, words, setWords) => {
     const removeWord = useCallback((word) => {
+        // Don't proceed if word is not placed
+        if (!word || !word.isPlaced) return;
+
         const newGrid = grid.map(row => [...row]);
         const wordLength = word.text.length;
         const dx = word.orientation === 'horizontal' ? 1 : 0;
@@ -98,6 +101,8 @@ const useRemoveWord = (grid, setGrid, words, setWords) => {
 // Custom hook for canPlaceWord logic
 const useCanPlaceWord = (grid) => {
     const canPlaceWord = useCallback((word, x, y, orientation) => {
+        if (!word) return false;
+
         const wordLength = word.text.length;
         const dx = orientation === 'horizontal' ? 1 : 0;
         const dy = orientation === 'vertical' ? 1 : 0;
@@ -129,6 +134,8 @@ const useCanPlaceWord = (grid) => {
 // Custom hook for rotating a word
 const useRotateWord = (canPlaceWord, setGrid, setWords, grid) => {
     const rotateWord = useCallback((word) => {
+        if (!word) return;
+
         const rotatedWord = {
             ...word,
             orientation: word.orientation === 'horizontal' ? 'vertical' : 'horizontal'
@@ -156,7 +163,7 @@ const useRotateWord = (canPlaceWord, setGrid, setWords, grid) => {
                 setWords(prev => prev.map(w => w.id === word.id ? { ...rotatedWord, isPlaced: true } : w));
             } else {
                 setGrid(newGrid);
-                setWords(prev => prev.map(w => w.id === word.id ? { ...rotatedWord, isPlaced: false, x: null, y: null } : w));
+                setWords(prev => prev.map(w => w.id === word.id ? { ...rotatedWord, isPlaced: false, x: 0, y: 0 } : w));
             }
         } else {
             setWords(prev => prev.map(w => w.id === word.id ? rotatedWord : w));
@@ -352,12 +359,19 @@ const DraggableWord = ({ word, onDragStart, onDragEnd, isSelected, onSelect }) =
 const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragStart, onDragEnd, word, isSelected, onSelect, canPlaceWord }) => {
     const [{ isDragging }, drag, preview] = useDrag({
         type: 'PLACED_WORD',
-        item: { type: 'PLACED_WORD', x, y, letter, word },
+        item: () => {
+            // Call onSelect to update the selected word
+            if (word) onSelect(word);
+            return { type: 'PLACED_WORD', x, y, letter, word };
+        },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
         end: (item, monitor) => {
-            onDragEnd(item, monitor.getDropResult());
+            // Check if dropped outside the grid
+            if (!monitor.didDrop() && item.word) {
+                onDragEnd(item);
+            }
         },
     });
 
@@ -427,6 +441,8 @@ const CustomDragLayer = () => {
     }
 
     const word = item.type === 'PLACED_WORD' ? item.word : item;
+    if (!word) return null;
+
     const isVertical = word.orientation === 'vertical';
 
     const style = {
@@ -469,6 +485,7 @@ const WordGame = () => {
     const [previewPosition, setPreviewPosition] = useState(null);
     const [foundWords, setFoundWords] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [isDraggingPlacedWord, setIsDraggingPlacedWord] = useState(false);
 
     const placeWord = usePlaceWord(grid, setGrid, words, setWords);
     const removeWord = useRemoveWord(grid, setGrid, words, setWords);
@@ -492,24 +509,27 @@ const WordGame = () => {
             const x = Math.floor((offset.x - gridRect.left) / CELL_SIZE);
             const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
 
+            // Check if dropped within the grid bounds
             if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
                 const wordToPlace = item.type === 'PLACED_WORD' ? item.word : item;
                 if (!wordToPlace) return;
 
-                if (item.type === 'PLACED_WORD') {
+                // Only remove if it's already placed
+                if (item.type === 'PLACED_WORD' && wordToPlace.isPlaced) {
                     removeWord(wordToPlace);
                 }
 
+                // Try to place the word in the new position
                 if (canPlaceWord(wordToPlace, x, y, wordToPlace.orientation)) {
                     placeWord(wordToPlace, x, y, wordToPlace.orientation);
                     setSelectedWordId(null);
-                } else {
-                    if (item.type === 'PLACED_WORD') {
-                        placeWord(wordToPlace, wordToPlace.x, wordToPlace.y, wordToPlace.orientation);
-                    }
+                } else if (item.type === 'PLACED_WORD' && wordToPlace.isPlaced) {
+                    // If can't place in new position, restore to original position
+                    placeWord(wordToPlace, wordToPlace.x, wordToPlace.y, wordToPlace.orientation);
                 }
             }
             setPreviewPosition(null);
+            setIsDraggingPlacedWord(false);
         },
         hover: (item, monitor) => {
             const offset = monitor.getClientOffset();
@@ -528,6 +548,7 @@ const WordGame = () => {
             const x = Math.floor((offset.x - gridRect.left) / CELL_SIZE);
             const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
 
+            // Check if cursor is outside the grid
             if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) {
                 setPreviewPosition(null);
                 return;
@@ -539,15 +560,13 @@ const WordGame = () => {
                 return;
             }
 
-            if (item.type === 'PLACED_WORD') {
+            // Track if we're currently dragging a placed word
+            if (item.type === 'PLACED_WORD' && !isDraggingPlacedWord) {
+                setIsDraggingPlacedWord(true);
                 removeWord(wordToPreview);
             }
 
             setPreviewPosition({ x, y, word: wordToPreview });
-
-            if (!canPlaceWord(wordToPreview, x, y, wordToPreview.orientation) && item.type === 'PLACED_WORD') {
-                placeWord(wordToPreview, wordToPreview.x, wordToPreview.y, wordToPreview.orientation);
-            }
         },
     });
 
@@ -572,11 +591,13 @@ const WordGame = () => {
         return { word, index, x: startX, y: startY };
     }, []);
 
-    const handleGridCellDragEnd = useCallback((item, result) => {
-        if (!result && item.word) {
+    const handleGridCellDragEnd = useCallback((item) => {
+        // This is called when the drag operation ends outside of a drop target
+        if (item.word && item.word.isPlaced) {
             removeWord(item.word);
             setPreviewPosition(null);
             setSelectedWordId(null);
+            setIsDraggingPlacedWord(false);
         }
     }, [removeWord]);
 
