@@ -2,7 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useDrag, useDrop, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { theme } from '../styles';
-import { RotateCw } from 'lucide-react';
+import { RotateCw, CheckCircle, X } from 'lucide-react';
+import englishWords from 'an-array-of-english-words';
 
 const GRID_SIZE = 5;
 const CELL_SIZE = 60;
@@ -22,6 +23,27 @@ const onTouchStart = (e) => {
 const TOUCH_STYLE = {
     touchAction: 'none'
 };
+
+function getSubWords(words, dictionary) {
+    const subWords = new Set();
+    for (const { text } of words) {
+        const wordLength = text.length;
+        // Generate sub-words of lengths from 3 up to wordLength - 1
+        for (let substrLength = 3; substrLength < wordLength; substrLength++) {
+            // Iterate all possible starting positions for the current length
+            for (let start = 0; start <= wordLength - substrLength; start++) {
+                const end = start + substrLength;
+                const substring = text.slice(start, end);
+                // Check if the substring is a valid word in the dictionary (case-insensitive)
+                if (dictionary.has(substring.toLowerCase())) {
+                    subWords.add(substring);
+                }
+            }
+        }
+    }
+    return subWords;
+}
+
 
 // Custom hook for placing a word
 const usePlaceWord = (grid, setGrid, words, setWords) => {
@@ -142,6 +164,134 @@ const useRotateWord = (canPlaceWord, setGrid, setWords, grid) => {
     }, [canPlaceWord, setGrid, setWords, grid]);
 
     return rotateWord;
+};
+
+// Function to find all valid words in the grid
+const findWordsInGrid = (grid) => {
+    const foundWords = new Set();
+    const directions = [
+        // Horizontal (left to right)
+        { dx: 1, dy: 0 },
+        // Vertical (top to bottom)
+        { dx: 0, dy: 1 },
+        // Diagonal (top-left to bottom-right)
+        { dx: 1, dy: 1 },
+    ];
+
+    // Convert the dictionary to lowercase for case-insensitive comparison
+    const dictionary = new Set(englishWords.map(word => word.toLowerCase()));
+    const subWords = getSubWords(initialWords, dictionary);
+
+    // Search in all directions starting from each cell
+    for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+            if (grid[y][x] === '') continue;
+
+            directions.forEach(({ dx, dy }) => {
+                let word = '';
+                let curX = x;
+                let curY = y;
+
+                // Continue in this direction until we reach the grid boundary
+                while (
+                    curX >= 0 && curX < GRID_SIZE &&
+                    curY >= 0 && curY < GRID_SIZE &&
+                    grid[curY][curX] !== ''
+                ) {
+                    word += grid[curY][curX];
+
+                    // Check if current word is valid (min length 3)
+                    if (word.length >= 3 && dictionary.has(word.toLowerCase()) && !subWords.has(word)) {
+                        foundWords.add(word.toLowerCase());
+                    }
+
+                    curX += dx;
+                    curY += dy;
+                }
+            });
+        }
+    }
+
+    return Array.from(foundWords).sort();
+};
+
+// FoundWordsModal component
+const FoundWordsModal = ({ words, onClose }) => {
+    if (!words || words.length === 0) return null;
+
+    return (
+        <div
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 1000
+            }}
+        >
+            <div
+                style={{
+                    backgroundColor: 'white',
+                    padding: '20px',
+                    borderRadius: '8px',
+                    maxWidth: '80%',
+                    maxHeight: '80%',
+                    overflow: 'auto',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
+                }}
+            >
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '16px'
+                    }}
+                >
+                    <h2 style={{ margin: 0 }}>Found Words: {words.length}</h2>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <X size={24} />
+                    </button>
+                </div>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px'
+                    }}
+                >
+                    {words.map((word, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#f0f0f0',
+                                borderRadius: '4px',
+                                textTransform: 'uppercase'
+                            }}
+                        >
+                            {word}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
 };
 
 // DraggableWord component
@@ -317,11 +467,19 @@ const WordGame = () => {
     const selectedWord = words.find(w => w.id === selectedWordId);
     const [grid, setGrid] = useState(Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill('')));
     const [previewPosition, setPreviewPosition] = useState(null);
+    const [foundWords, setFoundWords] = useState([]);
+    const [showModal, setShowModal] = useState(false);
 
     const placeWord = usePlaceWord(grid, setGrid, words, setWords);
     const removeWord = useRemoveWord(grid, setGrid, words, setWords);
     const canPlaceWord = useCanPlaceWord(grid);
     const rotateWord = useRotateWord(canPlaceWord, setGrid, setWords, grid);
+
+    const handleCheckWords = () => {
+        const words = findWordsInGrid(grid);
+        setFoundWords(words);
+        setShowModal(true);
+    };
 
     const [, drop] = useDrop({
         accept: ['WORD', 'PLACED_WORD'],
@@ -442,6 +600,23 @@ const WordGame = () => {
         }
     };
 
+    const buttonStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        padding: '10px 20px',
+        backgroundColor: '#4caf50',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        margin: '20px auto 0',
+        transition: 'all 0.2s ease',
+    };
+
     return (
         <div style={{ padding: '20px' }}>
             <CustomDragLayer />
@@ -530,14 +705,27 @@ const WordGame = () => {
                 ))}
             </div>
 
-            {selectedWordId && (
-                <div style={rotationControlsStyle}>
-                    <RotateCw
-                        size={32}
-                        style={iconStyle}
-                        onClick={() => rotateWord(selectedWord)}
-                    />
-                </div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                {selectedWordId && (
+                    <div style={rotationControlsStyle}>
+                        <RotateCw
+                            size={32}
+                            style={iconStyle}
+                            onClick={() => rotateWord(selectedWord)}
+                        />
+                    </div>
+                )}
+                <button style={buttonStyle} onClick={handleCheckWords}>
+                    <CheckCircle size={20} />
+                    Check
+                </button>
+            </div>
+
+            {showModal && (
+                <FoundWordsModal
+                    words={foundWords}
+                    onClose={() => setShowModal(false)}
+                />
             )}
         </div>
     );
