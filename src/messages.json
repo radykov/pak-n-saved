@@ -1,6 +1,6 @@
 {
     "1": {
-        "startingMessage": "Tap all the words which are English words.",
+        "startingMessage": "",
         "successMessage": "Great job! Lets try another example. Click the right arrow.",
         "failureMessage": "Oops! Don't worry, try again on the next word! Click the right arrow"
     },
