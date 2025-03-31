@@ -110,6 +110,12 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
         end: (item, monitor) => {
             onDragEnd(item, monitor.getDropResult());
         },
+        options: {
+            touch: {
+                cancel: false,
+                delay: 0,
+            }
+        },
     });
 
     useEffect(() => {
@@ -166,6 +172,12 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
             // Check if dropped outside the grid
             if (!monitor.didDrop() && item.word) {
                 onDragEnd(item);
+            }
+        },
+        options: {
+            touch: {
+                cancel: false,
+                delay: 0,
             }
         },
     });

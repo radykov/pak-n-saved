@@ -4,7 +4,7 @@ import MenuItemContent from './MenuItemContent';
 import { mobileView, theme } from '../styles';
 
 const menuItems = [
-    { title: 'How to play', content: 'Select all the words that you think are real English words. Click the arrows to change levels. You can only proceed to the next level if you have finished the current one.' },
+    { title: 'How to play', content: 'Place words on the grid ' },
     { title: 'About', content: 'Fun game to see how well you can recognize words.' },
 ];
 
