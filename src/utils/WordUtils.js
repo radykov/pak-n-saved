@@ -85,7 +85,9 @@ function useStartingWordInfo() {
 
         return {
             startingWords,
-            gridDimensions: wordData.gridDimensions
+            gridDimensions: wordData.gridDimensions,
+            id: "default",
+            maxScore: wordData.maxScore
         };
     });
     return data;

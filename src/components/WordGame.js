@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { theme } from '../styles';
-import { RotateCw, CheckCircle, X, RefreshCw } from 'lucide-react';
+import { RotateCw } from 'lucide-react';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord } from '../hooks/GridPlaceHooks';
 import FoundWordsModal from './FoundWordsModal';
@@ -11,7 +11,7 @@ import { CELL_SIZE } from './constants';
 import CustomDragLayer from './CustomDragLayer';
 
 const WordGame = () => {
-    const { startingWords: initialWords, gridDimensions } = useStartingWordInfo();
+    const { startingWords: initialWords, gridDimensions, id, maxScore } = useStartingWordInfo();
     const [words, setWords] = useState(initialWords);
     const [selectedWordId, setSelectedWordId] = useState(null);
     const selectedWord = words.find(w => w.id === selectedWordId);
