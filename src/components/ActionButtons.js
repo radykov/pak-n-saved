@@ -1,7 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useDrop } from 'react-dnd';
-import { theme } from '../styles';
-import { RotateCw, CheckCircle, X, RefreshCw } from 'lucide-react';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord } from '../hooks/GridPlaceHooks';
 import FoundWordsModal from './FoundWordsModal';
@@ -9,6 +7,7 @@ import DraggableWord from './DraggableWord';
 import GridCell from './GridCell';
 import { CELL_SIZE } from './constants';
 import CustomDragLayer from './CustomDragLayer';
+import ActionButtons from './ActionButtons';
 
 const WordGame = () => {
     const { startingWords: initialWords, gridDimensions } = useStartingWordInfo();
@@ -161,58 +160,6 @@ const WordGame = () => {
         }
     }, [removeWord]);
 
-    const controlsContainerStyle = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: '20px',
-        padding: '0',
-        width: controlsWidth || 'auto',
-        margin: '20px auto 0', // Center horizontally with margin
-    };
-
-    const controlButtonsSharedStyles = {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '8px 16px',
-        fontWeight: 'bold',
-        fontSize: '16px',
-    };
-
-    const resetButtonStyle = {
-        ...controlButtonsSharedStyles,
-        backgroundColor: '#ff5252',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: hasPlacedWords ? 'pointer' : 'not-allowed',
-        transition: 'all 0.2s ease',
-        opacity: hasPlacedWords ? 1 : 0.7,
-    };
-
-    const rotateButtonStyle = {
-        ...controlButtonsSharedStyles,
-        cursor: selectedWord ? 'pointer' : 'not-allowed',
-        color: selectedWord ? theme.colors.default : '#cccccc',
-        backgroundColor: selectedWord ? theme.colors.arrowEnabled : '#f0f0f0',
-        borderRadius: '4px',
-        border: 'none',
-        transition: 'all 0.2s ease',
-        opacity: selectedWord ? 1 : 0.7,
-    };
-
-    const checkButtonStyle = {
-        ...controlButtonsSharedStyles,
-        backgroundColor: hasPlacedWords ? '#4caf50' : '#cccccc',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: hasPlacedWords ? 'pointer' : 'not-allowed',
-        transition: 'all 0.2s ease',
-        opacity: hasPlacedWords ? 1 : 0.7,
-    };
-
     return (
         <div style={{ padding: '20px' }}>
             <CustomDragLayer />
@@ -221,7 +168,6 @@ const WordGame = () => {
                 ref={(el) => {
                     drop(el);
                     gridRef.current = el;
-                    // If we have the element but no width yet, set it
                     if (el && !controlsWidth) {
                         setControlsWidth(el.offsetWidth);
                     }
@@ -308,31 +254,15 @@ const WordGame = () => {
                 ))}
             </div>
 
-            <div style={controlsContainerStyle}>
-                <button
-                    style={resetButtonStyle}
-                    onClick={handleReset}
-                    disabled={!hasPlacedWords}
-                >
-                    Reset
-                </button>
-
-                <button
-                    style={rotateButtonStyle}
-                    onClick={() => selectedWord && rotateWord(selectedWord)}
-                    disabled={!selectedWord}
-                >
-                    <RotateCw size={19} />
-                </button>
-
-                <button
-                    style={checkButtonStyle}
-                    onClick={handleCheckWords}
-                    disabled={!hasPlacedWords}
-                >
-                    Check
-                </button>
-            </div>
+            <ActionButtons
+                onReset={handleReset}
+                onRotate={() => selectedWord && rotateWord(selectedWord)}
+                onCheck={handleCheckWords}
+                isResetDisabled={!hasPlacedWords}
+                isRotateDisabled={!selectedWord}
+                isCheckDisabled={!hasPlacedWords}
+                controlsWidth={controlsWidth}
+            />
 
             {showModal && (
                 <FoundWordsModal
