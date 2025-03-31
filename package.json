@@ -8,6 +8,8 @@
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
     "an-array-of-english-words": "^2.0.0",
+    "en-dictionary": "^2.0.3",
+    "en-wordnet": "^2.0.11",
     "lucide-react": "^0.484.0",
     "react": "^19.0.0",
     "react-dnd": "^16.0.1",

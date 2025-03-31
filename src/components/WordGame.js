@@ -3,8 +3,7 @@ import { useDrag, useDrop, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { theme } from '../styles';
 import { RotateCw, CheckCircle, X } from 'lucide-react';
-import englishWords from 'an-array-of-english-words';
-import getSubWords from '../utils/getSubWords';
+import { findWordsInGrid } from '../utils/WordUtils';
 import { GRID_SIZE, CELL_SIZE } from '../utils/GridInfo';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord } from '../hooks/GridPlaceHooks';
 
@@ -24,55 +23,6 @@ const TOUCH_STYLE = {
     touchAction: 'none'
 };
 
-
-// Function to find all valid words in the grid
-const findWordsInGrid = (grid) => {
-    const foundWords = new Set();
-    const directions = [
-        // Horizontal (left to right)
-        { dx: 1, dy: 0 },
-        // Vertical (top to bottom)
-        { dx: 0, dy: 1 },
-        // Diagonal (top-left to bottom-right)
-        { dx: 1, dy: 1 },
-    ];
-
-    // Convert the dictionary to lowercase for case-insensitive comparison
-    const dictionary = new Set(englishWords.map(word => word.toLowerCase()));
-    const subWords = getSubWords(initialWords, dictionary);
-
-    // Search in all directions starting from each cell
-    for (let y = 0; y < GRID_SIZE; y++) {
-        for (let x = 0; x < GRID_SIZE; x++) {
-            if (grid[y][x] === '') continue;
-
-            directions.forEach(({ dx, dy }) => {
-                let word = '';
-                let curX = x;
-                let curY = y;
-
-                // Continue in this direction until we reach the grid boundary
-                while (
-                    curX >= 0 && curX < GRID_SIZE &&
-                    curY >= 0 && curY < GRID_SIZE &&
-                    grid[curY][curX] !== ''
-                ) {
-                    word += grid[curY][curX];
-
-                    // Check if current word is valid (min length 3)
-                    if (word.length >= 3 && dictionary.has(word.toLowerCase()) && !subWords.has(word)) {
-                        foundWords.add(word.toLowerCase());
-                    }
-
-                    curX += dx;
-                    curY += dy;
-                }
-            });
-        }
-    }
-
-    return Array.from(foundWords).sort();
-};
 
 // FoundWordsModal component
 const FoundWordsModal = ({ words, onClose }) => {
@@ -345,7 +295,7 @@ const WordGame = () => {
     const rotateWord = useRotateWord(canPlaceWord, setGrid, setWords, grid);
 
     const handleCheckWords = () => {
-        const words = findWordsInGrid(grid);
+        const words = findWordsInGrid(grid, initialWords);
         setFoundWords(words);
         setShowModal(true);
     };
