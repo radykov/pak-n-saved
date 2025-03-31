@@ -239,7 +239,7 @@ const CustomDragLayer = () => {
     if (!word) return null;
 
     const isVertical = word.orientation === 'vertical';
-
+    const fontSize = 32;
     const style = {
         position: 'fixed',
         left: currentOffset.x,
@@ -250,18 +250,19 @@ const CustomDragLayer = () => {
         borderRadius: '4px',
         cursor: 'move',
         opacity: 0.8,
-        boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-        transform: 'translate(-50%, -50%)',
+        boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
         pointerEvents: 'none',
         zIndex: 1000,
         writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
         textOrientation: isVertical ? 'mixed' : 'initial',
-        height: isVertical ? `${word.text.length * 24}px` : 'auto',
-        width: isVertical ? 'auto' : `${word.text.length * 16}px`,
+        height: isVertical ? `${word.text.length * fontSize}px` : 'auto',
+        width: isVertical ? 'auto' : `${word.text.length * fontSize}px`,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         lineHeight: '1',
+        fontSize,
+        borderWidth: '4px',
     };
 
     return (
