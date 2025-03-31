@@ -1,4 +1,3 @@
-// WordGame.js
 import { useState, useCallback, useRef } from 'react';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord, useDropWord } from '../hooks/GridPlaceHooks';
@@ -8,6 +7,7 @@ import CustomDragLayer from './CustomDragLayer';
 import WordsList from './WordsList';
 import Scores from './Scores';
 import { ResetButton, RotateButton, CheckButton } from './ActionButtons';
+import useScoresHook from '../hooks/useScoresHook';
 
 const WordGame = () => {
     const { startingWords: initialWords, gridDimensions, id, maxScore } = useStartingWordInfo();
@@ -24,8 +24,9 @@ const WordGame = () => {
     const [showModal, setShowModal] = useState(false);
     const [isDraggingPlacedWord, setIsDraggingPlacedWord] = useState(false);
     const [controlsWidth, setControlsWidth] = useState(null);
-    // Changed: replaced lastCheckedScore with an array to hold all scores.
-    const [scores, setScores] = useState([]);
+
+    // Use the custom hook for scores storage and management.
+    const { scores, updateScores, resetScores } = useScoresHook(id);
 
     const gridRef = useRef(null);
 
@@ -52,8 +53,8 @@ const WordGame = () => {
         const found = findWordsInGrid(grid, initialWords);
         console.log(found);
         setFoundWords(found);
-        // Push new score to the beginning of the scores array.
-        setScores((prevScores) => [found.length, ...prevScores]);
+        // Update scores via the custom hook.
+        updateScores(found.length);
         setShowModal(true);
     };
 
@@ -66,8 +67,8 @@ const WordGame = () => {
         setWords(initialWords.map((word) => ({ ...word, isPlaced: false, x: null, y: null })));
         setSelectedWordId(null);
         setPreviewPosition(null);
-        // Reset the scores array on reset if desired.
-        setScores([]);
+        // Reset the scores via the custom hook if desired.
+        resetScores();
         setShowModal(false);
     };
 
