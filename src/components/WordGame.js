@@ -19,7 +19,7 @@ const TOUCH_STYLE = {
 
 // FoundWordsModal component
 const FoundWordsModal = ({ words, onClose }) => {
-    if (!words || words.length === 0) return null;
+    if (!words) return null;
 
     return (
         <div
@@ -77,24 +77,33 @@ const FoundWordsModal = ({ words, onClose }) => {
                         gap: '8px'
                     }}
                 >
-                    {words.map((word, index) => (
-                        <div
-                            key={index}
-                            style={{
-                                padding: '6px 12px',
-                                backgroundColor: '#f0f0f0',
-                                borderRadius: '4px',
-                                textTransform: 'uppercase'
-                            }}
-                        >
-                            {word}
-                        </div>
-                    ))}
+                    <Words words={words} />
                 </div>
             </div>
         </div>
     );
 };
+
+const Words = ({ words }) => {
+    if (words.length === 0) {
+        return "No new words that are more than 3 letters found";
+    }
+    return (
+        words.map((word, index) => (
+            <div
+                key={index}
+                style={{
+                    padding: '6px 12px',
+                    backgroundColor: '#f0f0f0',
+                    borderRadius: '4px',
+                    textTransform: 'uppercase'
+                }}
+            >
+                {word}
+            </div>
+        ))
+    );
+}
 
 // DraggableWord component
 const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
@@ -109,12 +118,6 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
         }),
         end: (item, monitor) => {
             onDragEnd(item, monitor.getDropResult());
-        },
-        options: {
-            touch: {
-                cancel: false,
-                delay: 0,
-            }
         },
     });
 
@@ -172,12 +175,6 @@ const GridCell = ({ x, y, letter, isPreview, isFirstLetter, previewWord, onDragS
             // Check if dropped outside the grid
             if (!monitor.didDrop() && item.word) {
                 onDragEnd(item);
-            }
-        },
-        options: {
-            touch: {
-                cancel: false,
-                delay: 0,
             }
         },
     });
@@ -302,6 +299,7 @@ const WordGame = () => {
 
     const handleCheckWords = () => {
         const words = findWordsInGrid(grid, initialWords);
+        console.log(words);
         setFoundWords(words);
         setShowModal(true);
     };
