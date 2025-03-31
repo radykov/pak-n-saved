@@ -1,7 +1,6 @@
 // /src/App.js
 import React from 'react';
 import TopHeader from './components/TopHeader';
-import SystemMessage from './components/SystemMessage';
 import Game from './components/Game';
 import { LevelProvider } from './contexts/LevelContext';
 import { DndProvider } from 'react-dnd';
@@ -33,7 +32,6 @@ function App() {
     <DndProvider backend={MultiBackend} options={HTML5toTouch}>
       < LevelProvider >
         < TopHeader />
-        <SystemMessage />
         <Game />
       </ LevelProvider>
     </DndProvider >
