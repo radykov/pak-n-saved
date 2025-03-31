@@ -297,6 +297,8 @@ const WordGame = () => {
     const canPlaceWord = useCanPlaceWord(grid);
     const rotateWord = useRotateWord(canPlaceWord, setGrid, setWords, grid);
 
+    const hasPlacedWords = words.some(word => word.isPlaced);
+
     const handleCheckWords = () => {
         const words = findWordsInGrid(grid, initialWords);
         console.log(words);
@@ -407,42 +409,47 @@ const WordGame = () => {
         }
     }, [removeWord]);
 
-    const rotationControlsStyle = {
+
+    const controlsContainerStyle = {
         display: 'flex',
-        gap: '16px',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginTop: '20px',
-        padding: '10px',
+        padding: '0 20px',
     };
 
-    const iconStyle = {
-        cursor: 'pointer',
-        color: theme.colors.default,
-        backgroundColor: theme.colors.arrowEnabled,
-        transition: 'all 0.2s ease',
-        padding: '8px',
-        borderRadius: '4px',
-        '&:hover': {
-            transform: 'scale(1.1)',
-        }
-    };
-
-    const buttonStyle = {
+    const controlButtonsSharedStyles = {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
         gap: '8px',
-        padding: '10px 20px',
-        backgroundColor: '#4caf50',
+        padding: '8px 16px',
+        fontWeight: 'bold',
+        fontSize: '16x',
+    };
+
+    const rotateButtonStyle = {
+        ...controlButtonsSharedStyles,
+        cursor: selectedWord ? 'pointer' : 'not-allowed',
+        color: selectedWord ? theme.colors.default : '#cccccc',
+        backgroundColor: selectedWord ? theme.colors.arrowEnabled : '#f0f0f0',
+        borderRadius: '4px',
+        border: 'none',
+        transition: 'all 0.2s ease',
+        opacity: selectedWord ? 1 : 0.7,
+    };
+
+    const checkButtonStyle = {
+        ...controlButtonsSharedStyles,
+        justifyContent: 'center',
+        backgroundColor: hasPlacedWords ? '#4caf50' : '#cccccc',
         color: 'white',
         border: 'none',
         borderRadius: '4px',
-        cursor: 'pointer',
-        fontSize: '16px',
-        fontWeight: 'bold',
-        margin: '20px auto 0',
+        cursor: hasPlacedWords ? 'pointer' : 'not-allowed',
         transition: 'all 0.2s ease',
+        opacity: hasPlacedWords ? 1 : 0.7,
     };
+
 
     return (
         <div style={{ padding: '20px' }}>
@@ -532,17 +539,21 @@ const WordGame = () => {
                 ))}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                {selectedWordId && (
-                    <div style={rotationControlsStyle}>
-                        <RotateCw
-                            size={32}
-                            style={iconStyle}
-                            onClick={() => rotateWord(selectedWord)}
-                        />
-                    </div>
-                )}
-                <button style={buttonStyle} onClick={handleCheckWords}>
+            <div style={controlsContainerStyle}>
+                <button
+                    style={rotateButtonStyle}
+                    onClick={() => selectedWord && rotateWord(selectedWord)}
+                    disabled={!selectedWord}
+                >
+                    <RotateCw size={20} />
+                    Rotate
+                </button>
+
+                <button
+                    style={checkButtonStyle}
+                    onClick={handleCheckWords}
+                    disabled={!hasPlacedWords}
+                >
                     <CheckCircle size={20} />
                     Check
                 </button>
