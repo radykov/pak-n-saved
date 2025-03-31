@@ -1,5 +1,6 @@
+import { useDrop } from 'react-dnd';
 import { useCallback } from 'react';
-import { GRID_SIZE } from '../utils/GridInfo';
+import { GRID_SIZE, CELL_SIZE } from '../utils/GridInfo';
 
 // Custom hook for placing a word
 const usePlaceWord = (grid, setGrid, words, setWords) => {
@@ -130,4 +131,85 @@ const useRotateWord = (canPlaceWord, setGrid, setWords, grid) => {
     return rotateWord;
 };
 
-export { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord };
+const useDropWord = ({
+    gridRef,
+    gridDimensions,
+    placeWord,
+    removeWord,
+    canPlaceWord,
+    setPreviewPosition,
+    isDraggingPlacedWord,
+    setIsDraggingPlacedWord,
+    setSelectedWordId,
+}) => {
+    const [, drop] = useDrop({
+        accept: ['WORD', 'PLACED_WORD'],
+        drop: (item, monitor) => {
+            const gridElement = gridRef.current;
+            if (!gridElement) return;
+
+            const offset = monitor.getClientOffset();
+            const gridRect = gridElement.getBoundingClientRect();
+            const x = Math.floor((offset.x - gridRect.left) / CELL_SIZE);
+            const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
+
+            if (x >= 0 && x < gridDimensions.width && y >= 0 && y < gridDimensions.height) {
+                const wordToPlace = item.type === 'PLACED_WORD' ? item.word : item;
+                if (!wordToPlace) return;
+
+                if (item.type === 'PLACED_WORD' && wordToPlace.isPlaced) {
+                    removeWord(wordToPlace);
+                }
+
+                if (canPlaceWord(wordToPlace, x, y, wordToPlace.orientation)) {
+                    placeWord(wordToPlace, x, y, wordToPlace.orientation);
+                    setSelectedWordId(null);
+                } else if (item.type === 'PLACED_WORD' && wordToPlace.isPlaced) {
+                    placeWord(wordToPlace, wordToPlace.x, wordToPlace.y, wordToPlace.orientation);
+                }
+            }
+            setPreviewPosition(null);
+            setIsDraggingPlacedWord(false);
+        },
+        hover: (item, monitor) => {
+            const offset = monitor.getClientOffset();
+            if (!offset) {
+                setPreviewPosition(null);
+                return;
+            }
+
+            const gridElement = gridRef.current;
+            if (!gridElement) {
+                setPreviewPosition(null);
+                return;
+            }
+
+            const gridRect = gridElement.getBoundingClientRect();
+            const x = Math.floor((offset.x - gridRect.left) / CELL_SIZE);
+            const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
+
+            if (x < 0 || x >= gridDimensions.width || y < 0 || y >= gridDimensions.height) {
+                setPreviewPosition(null);
+                return;
+            }
+
+            const wordToPreview = item.type === 'PLACED_WORD' ? item.word : item;
+            if (!wordToPreview) {
+                setPreviewPosition(null);
+                return;
+            }
+
+            if (item.type === 'PLACED_WORD' && !isDraggingPlacedWord) {
+                setIsDraggingPlacedWord(true);
+                removeWord(wordToPreview);
+            }
+
+            setPreviewPosition({ x, y, word: wordToPreview });
+        },
+    });
+
+    return drop;
+};
+
+
+export { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord, useDropWord };

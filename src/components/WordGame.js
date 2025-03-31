@@ -1,15 +1,12 @@
 // WordGame.js
 import { useState, useCallback, useRef } from 'react';
-import { useDrop } from 'react-dnd';
-import { theme } from '../styles';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
-import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord } from '../hooks/GridPlaceHooks';
+import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord, useDropWord } from '../hooks/GridPlaceHooks';
 import FoundWordsModal from './FoundWordsModal';
-import WordGrid from './WordGrid'; // Import the new component
-import { CELL_SIZE } from './constants';
+import WordGrid from './WordGrid';
 import CustomDragLayer from './CustomDragLayer';
 import WordsList from './WordsList';
-import { ResetButton, RotateButton, CheckButton } from './ActionButtons'; // Adjust the path as necessary
+import { ResetButton, RotateButton, CheckButton } from './ActionButtons';
 
 const WordGame = () => {
     const { startingWords: initialWords, gridDimensions, id, maxScore } = useStartingWordInfo();
@@ -36,6 +33,18 @@ const WordGame = () => {
 
     const hasPlacedWords = words.some((word) => word.isPlaced);
 
+    const drop = useDropWord({
+        gridRef,
+        gridDimensions,
+        placeWord,
+        removeWord,
+        canPlaceWord,
+        setPreviewPosition,
+        isDraggingPlacedWord,
+        setIsDraggingPlacedWord,
+        setSelectedWordId,
+    });
+
     const handleCheckWords = () => {
         const words = findWordsInGrid(grid, initialWords);
         console.log(words);
@@ -53,72 +62,6 @@ const WordGame = () => {
         setSelectedWordId(null);
         setPreviewPosition(null);
     };
-
-    const [, drop] = useDrop({
-        accept: ['WORD', 'PLACED_WORD'],
-        drop: (item, monitor) => {
-            const offset = monitor.getClientOffset();
-            const gridElement = document.getElementById('grid');
-            if (!gridElement) return;
-
-            const gridRect = gridElement.getBoundingClientRect();
-            const x = Math.floor((offset.x - gridRect.left) / CELL_SIZE);
-            const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
-
-            if (x >= 0 && x < grid[0].length && y >= 0 && y < grid.length) {
-                const wordToPlace = item.type === 'PLACED_WORD' ? item.word : item;
-                if (!wordToPlace) return;
-
-                if (item.type === 'PLACED_WORD' && wordToPlace.isPlaced) {
-                    removeWord(wordToPlace);
-                }
-
-                if (canPlaceWord(wordToPlace, x, y, wordToPlace.orientation)) {
-                    placeWord(wordToPlace, x, y, wordToPlace.orientation);
-                    setSelectedWordId(null);
-                } else if (item.type === 'PLACED_WORD' && wordToPlace.isPlaced) {
-                    placeWord(wordToPlace, wordToPlace.x, wordToPlace.y, wordToPlace.orientation);
-                }
-            }
-            setPreviewPosition(null);
-            setIsDraggingPlacedWord(false);
-        },
-        hover: (item, monitor) => {
-            const offset = monitor.getClientOffset();
-            if (!offset) {
-                setPreviewPosition(null);
-                return;
-            }
-
-            const gridElement = document.getElementById('grid');
-            if (!gridElement) {
-                setPreviewPosition(null);
-                return;
-            }
-
-            const gridRect = gridElement.getBoundingClientRect();
-            const x = Math.floor((offset.x - gridRect.left) / CELL_SIZE);
-            const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
-
-            if (x < 0 || x >= grid[0].length || y < 0 || y >= grid.length) {
-                setPreviewPosition(null);
-                return;
-            }
-
-            const wordToPreview = item.type === 'PLACED_WORD' ? item.word : item;
-            if (!wordToPreview) {
-                setPreviewPosition(null);
-                return;
-            }
-
-            if (item.type === 'PLACED_WORD' && !isDraggingPlacedWord) {
-                setIsDraggingPlacedWord(true);
-                removeWord(wordToPreview);
-            }
-
-            setPreviewPosition({ x, y, word: wordToPreview });
-        },
-    });
 
     const setGridRef = useCallback(
         (el) => {
@@ -211,9 +154,7 @@ const WordGame = () => {
                 />
                 <CheckButton onClick={handleCheckWords} disabled={!hasPlacedWords} />
             </div>
-            {showModal && (
-                <FoundWordsModal words={foundWords} onClose={() => setShowModal(false)} />
-            )}
+            {showModal && <FoundWordsModal words={foundWords} onClose={() => setShowModal(false)} />}
         </div>
     );
 };
