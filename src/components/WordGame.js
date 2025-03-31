@@ -5,10 +5,10 @@ import { RotateCw } from 'lucide-react';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord } from '../hooks/GridPlaceHooks';
 import FoundWordsModal from './FoundWordsModal';
-import DraggableWord from './DraggableWord';
 import GridCell from './GridCell';
 import { CELL_SIZE } from './constants';
 import CustomDragLayer from './CustomDragLayer';
+import WordsList from './WordsList'; // Added import
 
 const WordGame = () => {
     const { startingWords: initialWords, gridDimensions, id, maxScore } = useStartingWordInfo();
@@ -28,7 +28,6 @@ const WordGame = () => {
     // Calculate and store the width of the grid when component mounts
     useEffect(() => {
         if (gridRef.current) {
-            // Use the grid width for the controls
             setControlsWidth(gridRef.current.offsetWidth);
         }
     }, []);
@@ -48,13 +47,9 @@ const WordGame = () => {
     };
 
     const handleReset = () => {
-        // Reset grid to empty
         setGrid(Array(gridDimensions.height).fill().map(() => Array(gridDimensions.width).fill('')));
-        // Reset words to initial state
         setWords(initialWords.map(word => ({ ...word, isPlaced: false, x: null, y: null })));
-        // Clear selected word
         setSelectedWordId(null);
-        // Clear preview position
         setPreviewPosition(null);
     };
 
@@ -69,22 +64,18 @@ const WordGame = () => {
             const x = Math.floor((offset.x - gridRect.left) / CELL_SIZE);
             const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
 
-            // Check if dropped within the grid bounds
             if (x >= 0 && x < grid[0].length && y >= 0 && y < grid.length) {
                 const wordToPlace = item.type === 'PLACED_WORD' ? item.word : item;
                 if (!wordToPlace) return;
 
-                // Only remove if it's already placed
                 if (item.type === 'PLACED_WORD' && wordToPlace.isPlaced) {
                     removeWord(wordToPlace);
                 }
 
-                // Try to place the word in the new position
                 if (canPlaceWord(wordToPlace, x, y, wordToPlace.orientation)) {
                     placeWord(wordToPlace, x, y, wordToPlace.orientation);
                     setSelectedWordId(null);
                 } else if (item.type === 'PLACED_WORD' && wordToPlace.isPlaced) {
-                    // If can't place in new position, restore to original position
                     placeWord(wordToPlace, wordToPlace.x, wordToPlace.y, wordToPlace.orientation);
                 }
             }
@@ -108,7 +99,6 @@ const WordGame = () => {
             const x = Math.floor((offset.x - gridRect.left) / CELL_SIZE);
             const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
 
-            // Check if cursor is outside the grid
             if (x < 0 || x >= grid[0].length || y < 0 || y >= grid.length) {
                 setPreviewPosition(null);
                 return;
@@ -120,7 +110,6 @@ const WordGame = () => {
                 return;
             }
 
-            // Track if we're currently dragging a placed word
             if (item.type === 'PLACED_WORD' && !isDraggingPlacedWord) {
                 setIsDraggingPlacedWord(true);
                 removeWord(wordToPreview);
@@ -152,12 +141,19 @@ const WordGame = () => {
     }, []);
 
     const handleGridCellDragEnd = useCallback((item) => {
-        // This is called when the drag operation ends outside of a drop target
         if (item.word && item.word.isPlaced) {
             removeWord(item.word);
             setPreviewPosition(null);
             setSelectedWordId(null);
             setIsDraggingPlacedWord(false);
+        }
+    }, [removeWord]);
+
+    // Filter unplaced words and define drag end handler
+    const unplacedWords = words.filter(word => !word.isPlaced);
+    const handleDragEnd = useCallback((item, result) => {
+        if (!result) {
+            removeWord(item);
         }
     }, [removeWord]);
 
@@ -168,7 +164,7 @@ const WordGame = () => {
         marginTop: '20px',
         padding: '0',
         width: controlsWidth || 'auto',
-        margin: '20px auto 0', // Center horizontally with margin
+        margin: '20px auto 0',
     };
 
     const controlButtonsSharedStyles = {
@@ -221,7 +217,6 @@ const WordGame = () => {
                 ref={(el) => {
                     drop(el);
                     gridRef.current = el;
-                    // If we have the element but no width yet, set it
                     if (el && !controlsWidth) {
                         setControlsWidth(el.offsetWidth);
                     }
@@ -282,31 +277,12 @@ const WordGame = () => {
                 )}
             </div>
 
-            <div
-                style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    justifyContent: 'center',
-                    marginTop: '20px',
-                    gap: '8px',
-                    alignItems: 'flex-start',
-                }}
-            >
-                {words.filter(word => !word.isPlaced).map(word => (
-                    <DraggableWord
-                        key={word.id}
-                        word={word}
-                        onDragStart={() => { }}
-                        onDragEnd={(item, result) => {
-                            if (!result) {
-                                removeWord(item);
-                            }
-                        }}
-                        isSelected={selectedWordId === word.id}
-                        onSelect={handleWordSelect}
-                    />
-                ))}
-            </div>
+            <WordsList
+                words={unplacedWords}
+                selectedWordId={selectedWordId}
+                onSelect={handleWordSelect}
+                onDragEnd={handleDragEnd}
+            />
 
             <div style={controlsContainerStyle}>
                 <button
