@@ -23,6 +23,7 @@ const WordGame = () => {
     const [showModal, setShowModal] = useState(false);
     const [isDraggingPlacedWord, setIsDraggingPlacedWord] = useState(false);
     const [controlsWidth, setControlsWidth] = useState(null);
+    const [lastCheckedScore, setLastCheckedScore] = useState(null);
 
     const gridRef = useRef(null);
 
@@ -46,9 +47,10 @@ const WordGame = () => {
     });
 
     const handleCheckWords = () => {
-        const words = findWordsInGrid(grid, initialWords);
-        console.log(words);
-        setFoundWords(words);
+        const found = findWordsInGrid(grid, initialWords);
+        console.log(found);
+        setFoundWords(found);
+        setLastCheckedScore(found.length);
         setShowModal(true);
     };
 
@@ -61,6 +63,8 @@ const WordGame = () => {
         setWords(initialWords.map((word) => ({ ...word, isPlaced: false, x: null, y: null })));
         setSelectedWordId(null);
         setPreviewPosition(null);
+        setLastCheckedScore(null);
+        setShowModal(false);
     };
 
     const setGridRef = useCallback(
@@ -117,6 +121,14 @@ const WordGame = () => {
         [removeWord]
     );
 
+    const getScoreColor = (score, maxScore) => {
+        const percentage = (score / maxScore) * 100;
+        if (percentage < 50) return 'red';
+        if (percentage <= 75) return 'orange';
+        if (percentage < 100) return 'blue';
+        return 'green';
+    };
+
     const controlsContainerStyle = {
         display: 'flex',
         justifyContent: 'space-between',
@@ -153,6 +165,13 @@ const WordGame = () => {
                     disabled={!selectedWord}
                 />
                 <CheckButton onClick={handleCheckWords} disabled={!hasPlacedWords} />
+            </div>
+            <div style={{ width: controlsWidth || 'auto', margin: '10px auto 0', textAlign: 'center' }}>
+                {lastCheckedScore !== null && (
+                    <span style={{ fontWeight: "bold", color: getScoreColor(lastCheckedScore, maxScore) }}>
+                        Score: {lastCheckedScore} / {maxScore}
+                    </span>
+                )}
             </div>
             {showModal && <FoundWordsModal words={foundWords} onClose={() => setShowModal(false)} />}
         </div>
