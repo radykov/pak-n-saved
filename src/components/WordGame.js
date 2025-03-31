@@ -6,6 +6,7 @@ import FoundWordsModal from './FoundWordsModal';
 import WordGrid from './WordGrid';
 import CustomDragLayer from './CustomDragLayer';
 import WordsList from './WordsList';
+import Scores from './Scores';
 import { ResetButton, RotateButton, CheckButton } from './ActionButtons';
 
 const WordGame = () => {
@@ -23,7 +24,8 @@ const WordGame = () => {
     const [showModal, setShowModal] = useState(false);
     const [isDraggingPlacedWord, setIsDraggingPlacedWord] = useState(false);
     const [controlsWidth, setControlsWidth] = useState(null);
-    const [lastCheckedScore, setLastCheckedScore] = useState(null);
+    // Changed: replaced lastCheckedScore with an array to hold all scores.
+    const [scores, setScores] = useState([]);
 
     const gridRef = useRef(null);
 
@@ -50,7 +52,8 @@ const WordGame = () => {
         const found = findWordsInGrid(grid, initialWords);
         console.log(found);
         setFoundWords(found);
-        setLastCheckedScore(found.length);
+        // Push new score to the beginning of the scores array.
+        setScores((prevScores) => [found.length, ...prevScores]);
         setShowModal(true);
     };
 
@@ -63,7 +66,8 @@ const WordGame = () => {
         setWords(initialWords.map((word) => ({ ...word, isPlaced: false, x: null, y: null })));
         setSelectedWordId(null);
         setPreviewPosition(null);
-        setLastCheckedScore(null);
+        // Reset the scores array on reset if desired.
+        setScores([]);
         setShowModal(false);
     };
 
@@ -166,13 +170,12 @@ const WordGame = () => {
                 />
                 <CheckButton onClick={handleCheckWords} disabled={!hasPlacedWords} />
             </div>
-            <div style={{ width: controlsWidth || 'auto', margin: '10px auto 0', textAlign: 'center' }}>
-                {lastCheckedScore !== null && (
-                    <span style={{ fontWeight: "bold", color: getScoreColor(lastCheckedScore, maxScore) }}>
-                        Score: {lastCheckedScore} / {maxScore}
-                    </span>
-                )}
-            </div>
+            <Scores
+                scores={scores}
+                maxScore={maxScore}
+                controlsWidth={controlsWidth}
+                getScoreColor={getScoreColor}
+            />
             {showModal && <FoundWordsModal words={foundWords} onClose={() => setShowModal(false)} />}
         </div>
     );
