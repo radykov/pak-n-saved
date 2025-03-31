@@ -77,8 +77,9 @@ const useCanPlaceWord = (grid) => {
         for (let i = 0; i < wordLength; i++) {
             const newX = x + (dx * i);
             const newY = y + (dy * i);
+            if (newX === x && newY === y) continue;
             if (newX >= GRID_SIZE || newY >= GRID_SIZE || newX < 0 || newY < 0) return false;
-            if (currentPositions.has(`${newX},${newY}`)) continue;
+            // if (currentPositions.has(`${newX},${newY}`)) continue;
             if (grid[newY][newX] !== '') return false;
         }
         return true;

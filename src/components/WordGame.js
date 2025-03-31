@@ -3,17 +3,10 @@ import { useDrag, useDrop, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { theme } from '../styles';
 import { RotateCw, CheckCircle, X } from 'lucide-react';
-import { findWordsInGrid } from '../utils/WordUtils';
-import { GRID_SIZE, CELL_SIZE } from '../utils/GridInfo';
+import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord } from '../hooks/GridPlaceHooks';
 
-const initialWords = [
-    { id: '1', text: 'REACT', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
-    { id: '2', text: 'DRAG', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
-    { id: '3', text: 'DROP', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
-    { id: '4', text: 'GAME', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
-];
-
+const CELL_SIZE = 60;
 // Prevent touch scrolling for better mobile interaction
 const onTouchStart = (e) => {
     e.preventDefault();
@@ -278,12 +271,12 @@ const CustomDragLayer = () => {
     );
 };
 
-// Updated WordGame component
 const WordGame = () => {
+    const { startingWords: initialWords, gridDimensions } = useStartingWordInfo();
     const [words, setWords] = useState(initialWords);
     const [selectedWordId, setSelectedWordId] = useState(null);
     const selectedWord = words.find(w => w.id === selectedWordId);
-    const [grid, setGrid] = useState(Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill('')));
+    const [grid, setGrid] = useState(Array(gridDimensions.height).fill().map(() => Array(gridDimensions.width).fill('')));
     const [previewPosition, setPreviewPosition] = useState(null);
     const [foundWords, setFoundWords] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -312,7 +305,7 @@ const WordGame = () => {
             const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
 
             // Check if dropped within the grid bounds
-            if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
+            if (x >= 0 && x < grid[0].length && y >= 0 && y < grid.length) {
                 const wordToPlace = item.type === 'PLACED_WORD' ? item.word : item;
                 if (!wordToPlace) return;
 
@@ -351,7 +344,7 @@ const WordGame = () => {
             const y = Math.floor((offset.y - gridRect.top) / CELL_SIZE);
 
             // Check if cursor is outside the grid
-            if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) {
+            if (x < 0 || x >= grid[0].length || y < 0 || y >= grid.length) {
                 setPreviewPosition(null);
                 return;
             }
@@ -448,7 +441,7 @@ const WordGame = () => {
                 ref={drop}
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`,
+                    gridTemplateColumns: `repeat(${grid[0].length}, ${CELL_SIZE}px)`,
                     gap: '1px',
                     background: '#ddd',
                     padding: '1px',
@@ -456,8 +449,8 @@ const WordGame = () => {
                     width: 'fit-content',
                 }}
             >
-                {Array(GRID_SIZE).fill().map((_, y) =>
-                    Array(GRID_SIZE).fill().map((_, x) => {
+                {Array(grid.length).fill().map((_, y) =>
+                    Array(grid[0].length).fill().map((_, x) => {
                         const letter = grid[y][x];
                         const isPreview = previewPosition &&
                             previewPosition.x === x &&

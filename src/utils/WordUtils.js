@@ -1,6 +1,7 @@
 import englishWords from 'an-array-of-english-words';
+import words_and_grid from '../data/words_and_grid.json';
+import { useState } from 'react';
 const DICTIONARY = new Set(englishWords.map(word => word.toLowerCase()));
-
 
 function isInDictionary(word) {
     const result = DICTIONARY.has(word.toLowerCase());
@@ -74,5 +75,21 @@ const findWordsInGrid = (grid, initialWords) => {
     return Array.from(foundWords).sort();
 };
 
+function useStartingWordInfo() {
+    const [data] = useState(() => {
+        const wordData = words_and_grid['default'];
+        console.log(words_and_grid);
+        console.log(wordData);
+        const startingWords = wordData['words'].map((word, i) => (
+            { id: `${i}`, text: word, isPlaced: false, x: 0, y: 0, orientation: 'horizontal' }));
 
-export { getSubWords, findWordsInGrid };
+        return {
+            startingWords,
+            gridDimensions: wordData.gridDimensions
+        };
+    });
+    return data;
+}
+
+
+export { getSubWords, findWordsInGrid, useStartingWordInfo };
