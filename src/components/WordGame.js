@@ -1,10 +1,11 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+// WordGame.js
+import { useState, useCallback, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { theme } from '../styles';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord } from '../hooks/GridPlaceHooks';
 import FoundWordsModal from './FoundWordsModal';
-import GridCell from './GridCell';
+import WordGrid from './WordGrid'; // Import the new component
 import { CELL_SIZE } from './constants';
 import CustomDragLayer from './CustomDragLayer';
 import WordsList from './WordsList';
@@ -14,30 +15,26 @@ const WordGame = () => {
     const { startingWords: initialWords, gridDimensions, id, maxScore } = useStartingWordInfo();
     const [words, setWords] = useState(initialWords);
     const [selectedWordId, setSelectedWordId] = useState(null);
-    const selectedWord = words.find(w => w.id === selectedWordId);
-    const [grid, setGrid] = useState(Array(gridDimensions.height).fill().map(() => Array(gridDimensions.width).fill('')));
+    const selectedWord = words.find((w) => w.id === selectedWordId);
+    const [grid, setGrid] = useState(
+        Array(gridDimensions.height)
+            .fill()
+            .map(() => Array(gridDimensions.width).fill(''))
+    );
     const [previewPosition, setPreviewPosition] = useState(null);
     const [foundWords, setFoundWords] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [isDraggingPlacedWord, setIsDraggingPlacedWord] = useState(false);
     const [controlsWidth, setControlsWidth] = useState(null);
 
-    // Reference to the grid element
     const gridRef = useRef(null);
-
-    // Calculate and store the width of the grid when component mounts
-    useEffect(() => {
-        if (gridRef.current) {
-            setControlsWidth(gridRef.current.offsetWidth);
-        }
-    }, []);
 
     const placeWord = usePlaceWord(grid, setGrid, words, setWords);
     const removeWord = useRemoveWord(grid, setGrid, words, setWords);
     const canPlaceWord = useCanPlaceWord(grid);
     const rotateWord = useRotateWord(canPlaceWord, setGrid, setWords, grid);
 
-    const hasPlacedWords = words.some(word => word.isPlaced);
+    const hasPlacedWords = words.some((word) => word.isPlaced);
 
     const handleCheckWords = () => {
         const words = findWordsInGrid(grid, initialWords);
@@ -47,8 +44,12 @@ const WordGame = () => {
     };
 
     const handleReset = () => {
-        setGrid(Array(gridDimensions.height).fill().map(() => Array(gridDimensions.width).fill('')));
-        setWords(initialWords.map(word => ({ ...word, isPlaced: false, x: null, y: null })));
+        setGrid(
+            Array(gridDimensions.height)
+                .fill()
+                .map(() => Array(gridDimensions.width).fill(''))
+        );
+        setWords(initialWords.map((word) => ({ ...word, isPlaced: false, x: null, y: null })));
         setSelectedWordId(null);
         setPreviewPosition(null);
     };
@@ -119,6 +120,17 @@ const WordGame = () => {
         },
     });
 
+    const setGridRef = useCallback(
+        (el) => {
+            drop(el);
+            gridRef.current = el;
+            if (el && !controlsWidth) {
+                setControlsWidth(el.offsetWidth);
+            }
+        },
+        [drop, controlsWidth]
+    );
+
     const handleWordSelect = (word) => {
         setSelectedWordId(word.id);
     };
@@ -140,22 +152,27 @@ const WordGame = () => {
         return { word, index, x: startX, y: startY };
     }, []);
 
-    const handleGridCellDragEnd = useCallback((item) => {
-        if (item.word && item.word.isPlaced) {
-            removeWord(item.word);
-            setPreviewPosition(null);
-            setSelectedWordId(null);
-            setIsDraggingPlacedWord(false);
-        }
-    }, [removeWord]);
+    const handleGridCellDragEnd = useCallback(
+        (item) => {
+            if (item.word && item.word.isPlaced) {
+                removeWord(item.word);
+                setPreviewPosition(null);
+                setSelectedWordId(null);
+                setIsDraggingPlacedWord(false);
+            }
+        },
+        [removeWord]
+    );
 
-    // Filter unplaced words and define drag end handler
-    const unplacedWords = words.filter(word => !word.isPlaced);
-    const handleDragEnd = useCallback((item, result) => {
-        if (!result) {
-            removeWord(item);
-        }
-    }, [removeWord]);
+    const unplacedWords = words.filter((word) => !word.isPlaced);
+    const handleDragEnd = useCallback(
+        (item, result) => {
+            if (!result) {
+                removeWord(item);
+            }
+        },
+        [removeWord]
+    );
 
     const controlsContainerStyle = {
         display: 'flex',
@@ -169,89 +186,33 @@ const WordGame = () => {
     return (
         <div style={{ padding: '20px' }}>
             <CustomDragLayer />
-            <div
-                id="grid"
-                ref={(el) => {
-                    drop(el);
-                    gridRef.current = el;
-                    if (el && !controlsWidth) {
-                        setControlsWidth(el.offsetWidth);
-                    }
-                }}
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${grid[0].length}, ${CELL_SIZE}px)`,
-                    gap: '1px',
-                    background: '#ddd',
-                    padding: '1px',
-                    margin: '0 auto',
-                    width: 'fit-content',
-                }}
-            >
-                {Array(grid.length).fill().map((_, y) =>
-                    Array(grid[0].length).fill().map((_, x) => {
-                        const letter = grid[y][x];
-                        const isPreview = previewPosition &&
-                            previewPosition.x === x &&
-                            previewPosition.y === y;
-                        const isFirstLetter = letter &&
-                            words.some(w => w.isPlaced && w.x === x && w.y === y);
-                        const previewLetter = getPreviewLetter(x, y, previewPosition);
-                        const word = words.find(w => {
-                            if (!w.isPlaced) return false;
-                            const dx = w.orientation === 'horizontal' ? 1 : 0;
-                            const dy = w.orientation === 'vertical' ? 1 : 0;
-                            const wordLength = w.text.length;
-
-                            for (let i = 0; i < wordLength; i++) {
-                                const newX = w.x + (dx * i);
-                                const newY = w.y + (dy * i);
-                                if (newX === x && newY === y) {
-                                    return true;
-                                }
-                            }
-                            return false;
-                        });
-
-                        return (
-                            <GridCell
-                                key={`${x}-${y}`}
-                                x={x}
-                                y={y}
-                                letter={letter}
-                                isPreview={isPreview}
-                                isFirstLetter={isFirstLetter}
-                                previewWord={previewLetter}
-                                onDragStart={() => { }}
-                                onDragEnd={handleGridCellDragEnd}
-                                word={word}
-                                isSelected={word && selectedWordId === word.id}
-                                onSelect={handleWordSelect}
-                                canPlaceWord={canPlaceWord}
-                            />
-                        );
-                    })
-                )}
-            </div>
-
+            <WordGrid
+                grid={grid}
+                words={words}
+                selectedWordId={selectedWordId}
+                previewPosition={previewPosition}
+                getPreviewLetter={getPreviewLetter}
+                handleGridCellDragEnd={handleGridCellDragEnd}
+                canPlaceWord={canPlaceWord}
+                handleWordSelect={handleWordSelect}
+                setGridRef={setGridRef}
+            />
             <WordsList
                 words={unplacedWords}
                 selectedWordId={selectedWordId}
                 onSelect={handleWordSelect}
                 onDragEnd={handleDragEnd}
             />
-
             <div style={controlsContainerStyle}>
                 <ResetButton onClick={handleReset} disabled={!hasPlacedWords} />
-                <RotateButton onClick={() => selectedWord && rotateWord(selectedWord)} disabled={!selectedWord} />
+                <RotateButton
+                    onClick={() => selectedWord && rotateWord(selectedWord)}
+                    disabled={!selectedWord}
+                />
                 <CheckButton onClick={handleCheckWords} disabled={!hasPlacedWords} />
             </div>
-
             {showModal && (
-                <FoundWordsModal
-                    words={foundWords}
-                    onClose={() => setShowModal(false)}
-                />
+                <FoundWordsModal words={foundWords} onClose={() => setShowModal(false)} />
             )}
         </div>
     );
