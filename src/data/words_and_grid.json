@@ -10,7 +10,7 @@
             "height": 3
         },
         "maxScore": 5,
-        "startingText": "Drag and drop words on the grid to create the most new words"
+        "startingText": "Drag and drop words on the grid to create new words horizontally, vertically and diagonally.You can also re-arrange words on the grid and drag them off if needed"
     },
     "2": {
         "words": [

@@ -1,3 +1,4 @@
+// src/components/WordGame.js
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord, useDropWord } from '../hooks/GridPlaceHooks';
@@ -8,9 +9,14 @@ import WordsList from './WordsList';
 import BasicScore from './BasicScore';
 import { RotateButton } from './ActionButtons';
 import ViewWordsButton from './ViewWordsButton';
+import StartingMessage from './StartingMessage';
+import { useGameContext } from '../contexts/GameContext';
 
 const WordGame = () => {
-    const { startingWords: initialWords, gridDimensions, maxScore } = useStartingWordInfo();
+    const { startingWords: initialWords, gridDimensions, startingText, maxScore } = useStartingWordInfo();
+    const { currentLevelId, savedScores, updateSavedScore } = useGameContext();
+    const savedScore = savedScores[currentLevelId] || 0;
+
     const [words, setWords] = useState(initialWords);
     const [selectedWordId, setSelectedWordId] = useState(null);
     const selectedWord = words.find((w) => w.id === selectedWordId);
@@ -51,6 +57,13 @@ const WordGame = () => {
         setFoundWords(found);
         setCurrentScore(found.length);
     }, [grid, initialWords]);
+
+    // Update max score in context if currentScore exceeds the stored maximum.
+    useEffect(() => {
+        if (currentScore > savedScore) {
+            updateSavedScore(currentLevelId, currentScore);
+        }
+    }, [currentScore, savedScore, currentLevelId, updateSavedScore]);
 
     const setGridRef = useCallback(
         (el) => {
@@ -119,7 +132,11 @@ const WordGame = () => {
         <div>
             <CustomDragLayer />
             <div style={{ position: 'relative', width: '100%', margin: '20px 0', textAlign: 'center' }}>
-                <BasicScore currentScore={currentScore} maxScore={maxScore} />
+                {currentScore === 0 && startingText ? (
+                    <StartingMessage message={startingText} />
+                ) : (
+                    <BasicScore currentScore={currentScore} maxScore={maxScore} />
+                )}
                 {currentScore > 0 && (
                     <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
                         <ViewWordsButton onClick={() => setShowModal(true)} />

@@ -1,6 +1,6 @@
 import { useDrop } from 'react-dnd';
 import { useCallback } from 'react';
-import { GRID_SIZE, CELL_SIZE } from '../utils/GridInfo';
+import { CELL_SIZE } from '../utils/GridInfo';
 
 // Custom hook for placing a word
 const usePlaceWord = (grid, setGrid, words, setWords) => {
@@ -79,7 +79,7 @@ const useCanPlaceWord = (grid) => {
             const newX = x + (dx * i);
             const newY = y + (dy * i);
             if (newX === x && newY === y) continue;
-            if (newX >= GRID_SIZE || newY >= GRID_SIZE || newX < 0 || newY < 0) return false;
+            if (newX >= grid[0].length || newY >= grid.length || newX < 0 || newY < 0) return false;
             // if (currentPositions.has(`${newX},${newY}`)) continue;
             if (grid[newY][newX] !== '') return false;
         }

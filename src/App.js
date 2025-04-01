@@ -2,7 +2,6 @@
 import React from 'react';
 import TopHeader from './components/TopHeader';
 import Game from './components/Game';
-import { LevelProvider } from './contexts/LevelContext';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
@@ -30,10 +29,8 @@ const HTML5toTouch = {
 function App() {
   return (
     <DndProvider backend={MultiBackend} options={HTML5toTouch}>
-      < LevelProvider >
-        < TopHeader />
-        <Game />
-      </ LevelProvider>
+      < TopHeader />
+      <Game />
     </DndProvider >
   );
 }
