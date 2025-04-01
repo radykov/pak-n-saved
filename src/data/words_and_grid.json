@@ -10,7 +10,7 @@
             "height": 3
         },
         "maxScore": 2,
-        "startingText": "Drag and drop words on the grid to create new words horizontally, vertically and diagonally"
+        "startingText": "Drag and drop words on the grid to create new words horizontally, vertically and diagonally. PS You can drag words after you've placed them."
     },
     "2": {
         "words": [
@@ -23,7 +23,7 @@
             "height": 3
         },
         "maxScore": 1,
-        "startingText": "You can drag words after you've placed them."
+        "startingText": "Only words with 3 or more letters are counted"
     },
     "3": {
         "words": [

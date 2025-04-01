@@ -20,7 +20,7 @@ const HTML5toTouch = {
       backend: TouchBackend,
       options: {
         enableTouchEvents: true, delayTouchStart: 0,  // Remove touch delay
-        delayMouseStart: 0
+        usePreview: false,
       },
       preview: true
     }
