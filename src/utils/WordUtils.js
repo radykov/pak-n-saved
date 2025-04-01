@@ -1,6 +1,7 @@
 import englishWords from 'an-array-of-english-words';
 import words_and_grid from '../data/words_and_grid.json';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useGameContext } from '../contexts/GameContext';
 const DICTIONARY = new Set(englishWords.map(word => word.toLowerCase()));
 
 function isInDictionary(word) {
@@ -75,13 +76,20 @@ const findWordsInGrid = (grid, initialWords) => {
     return Array.from(foundWords).sort();
 };
 
-function useStartingWordInfo(level) {
-    const [data] = useState(() => {
-        const wordData = words_and_grid[level ?? '1'];
-        console.log(words_and_grid);
-        console.log(wordData);
-        const startingWords = wordData['words'].map((word, i) => (
-            { id: `${i}`, text: word, isPlaced: false, x: 0, y: 0, orientation: 'horizontal' }));
+
+const useStartingWordInfo = () => {
+    const { currentLevelId } = useGameContext();
+    const data = useMemo(() => {
+        const level = currentLevelId ?? '1';
+        const wordData = words_and_grid[level];
+        const startingWords = wordData['words'].map((word, i) => ({
+            id: `${i}`,
+            text: word,
+            isPlaced: false,
+            x: 0,
+            y: 0,
+            orientation: 'horizontal'
+        }));
 
         return {
             startingWords,
@@ -90,7 +98,8 @@ function useStartingWordInfo(level) {
             maxScore: wordData.maxScore,
             startingText: wordData.startingText
         };
-    });
+    }, [currentLevelId]);
+
     return data;
 }
 

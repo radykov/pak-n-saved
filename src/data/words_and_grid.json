@@ -9,8 +9,8 @@
             "width": 3,
             "height": 3
         },
-        "maxScore": 5,
-        "startingText": "Drag and drop words on the grid to create new words horizontally, vertically and diagonally.You can also re-arrange words on the grid and drag them off if needed"
+        "maxScore": 2,
+        "startingText": "Drag and drop words on the grid to create new words horizontally, vertically and diagonally"
     },
     "2": {
         "words": [
@@ -22,20 +22,20 @@
             "width": 3,
             "height": 3
         },
-        "maxScore": 5,
-        "startingText": "Only words that are 3 letters or longer are counted"
+        "maxScore": 1,
+        "startingText": "You can drag words after you've placed them."
     },
     "3": {
         "words": [
-            "TRY",
-            "WIN",
-            "NOW"
+            "SPIN",
+            "THIS",
+            "TIME"
         ],
         "gridDimensions": {
             "width": 3,
-            "height": 3
+            "height": 4
         },
         "maxScore": 5,
-        "startingText": ""
+        "startingText": "Rotate words by selecting them in the grid or from the list and clicking the rotate button at the bottom"
     }
 }

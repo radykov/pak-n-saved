@@ -1,5 +1,4 @@
-// src/components/WordGame.js
-import { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord, useDropWord } from '../hooks/GridPlaceHooks';
 import FoundWordsModal from './FoundWordsModal';
@@ -11,10 +10,11 @@ import { RotateButton } from './ActionButtons';
 import ViewWordsButton from './ViewWordsButton';
 import StartingMessage from './StartingMessage';
 import { useGameContext } from '../contexts/GameContext';
+import { BackButton, NextButton } from './NavButtons';
 
 const WordGame = () => {
-    const { startingWords: initialWords, gridDimensions, startingText, maxScore } = useStartingWordInfo();
-    const { currentLevelId, savedScores, updateSavedScore } = useGameContext();
+    const { currentLevelId, setCurrentLevelId, savedScores, updateSavedScore } = useGameContext();
+    const { startingWords: initialWords, gridDimensions, startingText, maxScore } = useStartingWordInfo(currentLevelId);
     const savedScore = savedScores[currentLevelId] || 0;
 
     const [words, setWords] = useState(initialWords);
@@ -33,6 +33,22 @@ const WordGame = () => {
     const [currentScore, setCurrentScore] = useState(0);
 
     const gridRef = useRef(null);
+
+    // Reset local states whenever the level changes or new starting info is provided.
+    useEffect(() => {
+        setWords(initialWords);
+        setGrid(
+            Array(gridDimensions.height)
+                .fill()
+                .map(() => Array(gridDimensions.width).fill(''))
+        );
+        setPreviewPosition(null);
+        setFoundWords([]);
+        setShowModal(false);
+        setIsDraggingPlacedWord(false);
+        setCurrentScore(0);
+        setSelectedWordId(null);
+    }, [currentLevelId, initialWords, gridDimensions]);
 
     const placeWord = usePlaceWord(grid, setGrid, words, setWords);
     const removeWord = useRemoveWord(grid, setGrid, words, setWords);
@@ -119,14 +135,37 @@ const WordGame = () => {
         [removeWord]
     );
 
+    // Handlers for navigation buttons
+    const handleBack = () => {
+        // Decrement the level id (convert to number, subtract, then update context)
+        const newLevelId = Number(currentLevelId) - 1;
+        setCurrentLevelId(newLevelId.toString());
+    };
+
+    const handleNext = () => {
+        // Increment the level id (convert to number, add, then update context)
+        const newLevelId = Number(currentLevelId) + 1;
+        setCurrentLevelId(newLevelId.toString());
+    };
+
+    // Container style for the grid and nav buttons
     const controlsContainerStyle = {
         display: 'flex',
-        justifyContent: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
         alignItems: 'center',
-        padding: '0',
-        width: controlsWidth || 'auto',
+        width: '100%',
         margin: unplacedWords.length !== 0 ? '20px auto 0' : ''
     };
+
+    // Fixed width containers to reserve space even when a button isn't rendered.
+    const navButtonWrapperStyle = {
+        width: '80px',
+        display: 'flex',
+        justifyContent: 'center'
+    };
+
+    const isNextEnabled = savedScore >= 0.8 * maxScore;
 
     return (
         <div>
@@ -160,12 +199,22 @@ const WordGame = () => {
                 onSelect={handleWordSelect}
                 onDragEnd={handleDragEnd}
             />
+
             <div style={controlsContainerStyle}>
-                <RotateButton
-                    onClick={() => selectedWord && rotateWord(selectedWord)}
-                    disabled={!selectedWord}
-                />
+                <div style={navButtonWrapperStyle}>
+                    <BackButton onClick={handleBack} isEnabled={currentLevelId !== "1"} />
+                </div>
+                <div style={navButtonWrapperStyle}>
+                    <RotateButton
+                        onClick={() => selectedWord && rotateWord(selectedWord)}
+                        disabled={!selectedWord}
+                    />
+                </div>
+                <div style={navButtonWrapperStyle}>
+                    <NextButton onClick={handleNext} isEnabled={isNextEnabled} />
+                </div>
             </div>
+
             {showModal && <FoundWordsModal words={foundWords} onClose={() => setShowModal(false)} />}
         </div>
     );

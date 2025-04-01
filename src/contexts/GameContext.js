@@ -7,7 +7,7 @@ export const GameProvider = ({ children }) => {
     // Initialize the current level id from local storage or default to level 1.
     const [currentLevelId, setCurrentLevelId] = useState(() => {
         const storedLevelId = localStorage.getItem("currentLevelId");
-        return storedLevelId ? parseInt(storedLevelId, 10) : 1;
+        return storedLevelId ? storedLevelId : "1";
     });
 
     // Initialize max scores from local storage or default to an empty object.

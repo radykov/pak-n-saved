@@ -1,8 +1,36 @@
 // /src/styles.js
 
-const THEME_COLOR = '#F7A800';
+export const THEME_COLOR = '#F7A800';
 const WHITE = '#ffffff';
 const BLACK = '#000000';
+export const DISABLED_BUTTON_BACKGROUND = '#cccccc';
+export const CHEVRON_SIZE = 19;
+const GENERIC_BUTTON_STYLES = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '8px 16px',
+    fontWeight: 'bold',
+    fontSize: '16px',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    transition: 'all 0.2s ease',
+}
+
+export const DISABLED_BUTTON_STYLE = {
+    ...GENERIC_BUTTON_STYLES,
+    backgroundColor: DISABLED_BUTTON_BACKGROUND,
+    cursor: 'not-allowed',
+    opacity: 0.7
+};
+
+export const ENABLED_BUTTON_STYLE = {
+    ...GENERIC_BUTTON_STYLES,
+    backgroundColor: THEME_COLOR,
+    cursor: 'pointer',
+    opacity: 1
+};
 
 export const theme = {
     fonts: {

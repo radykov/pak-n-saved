@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import Words from './Words';
+import { THEME_COLOR } from '../styles';
 
 const FoundWordsModal = ({ words, onClose }) => {
     if (!words) return null;
@@ -44,6 +45,7 @@ const FoundWordsModal = ({ words, onClose }) => {
                         style={{
                             background: 'none',
                             border: 'none',
+                            color: THEME_COLOR,
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
@@ -63,7 +65,7 @@ const FoundWordsModal = ({ words, onClose }) => {
                     <Words words={words} />
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
