@@ -7,6 +7,7 @@ import CustomDragLayer from './CustomDragLayer';
 import WordsList from './WordsList';
 import BasicScore from './BasicScore';
 import { RotateButton } from './ActionButtons';
+import ViewWordsButton from './ViewWordsButton';
 
 const WordGame = () => {
     const { startingWords: initialWords, gridDimensions, maxScore } = useStartingWordInfo();
@@ -50,7 +51,6 @@ const WordGame = () => {
         setFoundWords(found);
         setCurrentScore(found.length);
     }, [grid, initialWords]);
-
 
     const setGridRef = useCallback(
         (el) => {
@@ -112,13 +112,20 @@ const WordGame = () => {
         alignItems: 'center',
         padding: '0',
         width: controlsWidth || 'auto',
-        margin: '20px auto 0',
+        margin: unplacedWords.length !== 0 ? '20px auto 0' : ''
     };
 
     return (
         <div>
             <CustomDragLayer />
-            <BasicScore currentScore={currentScore} maxScore={maxScore} />
+            <div style={{ position: 'relative', width: '100%', margin: '20px 0', textAlign: 'center' }}>
+                <BasicScore currentScore={currentScore} maxScore={maxScore} />
+                {currentScore > 0 && (
+                    <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
+                        <ViewWordsButton onClick={() => setShowModal(true)} />
+                    </div>
+                )}
+            </div>
             <WordGrid
                 grid={grid}
                 words={words}

@@ -75,9 +75,9 @@ const findWordsInGrid = (grid, initialWords) => {
     return Array.from(foundWords).sort();
 };
 
-function useStartingWordInfo() {
+function useStartingWordInfo(level) {
     const [data] = useState(() => {
-        const wordData = words_and_grid['1'];
+        const wordData = words_and_grid[level ?? '1'];
         console.log(words_and_grid);
         console.log(wordData);
         const startingWords = wordData['words'].map((word, i) => (
@@ -87,7 +87,8 @@ function useStartingWordInfo() {
             startingWords,
             gridDimensions: wordData.gridDimensions,
             id: "default",
-            maxScore: wordData.maxScore
+            maxScore: wordData.maxScore,
+            startingText: wordData.startingText
         };
     });
     return data;

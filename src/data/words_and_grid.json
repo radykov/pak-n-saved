@@ -9,6 +9,33 @@
             "width": 3,
             "height": 3
         },
-        "maxScore": 5
+        "maxScore": 5,
+        "startingText": "Drag and drop words on the grid to create the most new words"
+    },
+    "2": {
+        "words": [
+            "TRY",
+            "WIN",
+            "NOW"
+        ],
+        "gridDimensions": {
+            "width": 3,
+            "height": 3
+        },
+        "maxScore": 5,
+        "startingText": "Only words that are 3 letters or longer are counted"
+    },
+    "3": {
+        "words": [
+            "TRY",
+            "WIN",
+            "NOW"
+        ],
+        "gridDimensions": {
+            "width": 3,
+            "height": 3
+        },
+        "maxScore": 5,
+        "startingText": ""
     }
 }
