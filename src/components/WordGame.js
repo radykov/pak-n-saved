@@ -1,13 +1,12 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord, useDropWord } from '../hooks/GridPlaceHooks';
 import FoundWordsModal from './FoundWordsModal';
 import WordGrid from './WordGrid';
 import CustomDragLayer from './CustomDragLayer';
 import WordsList from './WordsList';
-import Scores from './Scores';
+import BasicScore from './BasicScore';
 import { ResetButton, RotateButton, CheckButton } from './ActionButtons';
-import useScoresHook from '../hooks/useScoresHook';
 
 const WordGame = () => {
     const { startingWords: initialWords, gridDimensions, id, maxScore } = useStartingWordInfo();
@@ -24,9 +23,7 @@ const WordGame = () => {
     const [showModal, setShowModal] = useState(false);
     const [isDraggingPlacedWord, setIsDraggingPlacedWord] = useState(false);
     const [controlsWidth, setControlsWidth] = useState(null);
-
-    // Use the custom hook for scores storage and management.
-    const { scores, updateScores, resetScores } = useScoresHook(id);
+    const [currentScore, setCurrentScore] = useState(0);
 
     const gridRef = useRef(null);
 
@@ -49,12 +46,14 @@ const WordGame = () => {
         setSelectedWordId,
     });
 
-    const handleCheckWords = () => {
+    // Automatically update score when grid changes
+    useEffect(() => {
         const found = findWordsInGrid(grid, initialWords);
-        console.log(found);
         setFoundWords(found);
-        // Update scores via the custom hook.
-        updateScores(found.length);
+        setCurrentScore(found.length);
+    }, [grid, initialWords]);
+
+    const handleCheckWords = () => {
         setShowModal(true);
     };
 
@@ -67,8 +66,6 @@ const WordGame = () => {
         setWords(initialWords.map((word) => ({ ...word, isPlaced: false, x: null, y: null })));
         setSelectedWordId(null);
         setPreviewPosition(null);
-        // Reset the scores via the custom hook if desired.
-        resetScores();
         setShowModal(false);
     };
 
@@ -126,14 +123,6 @@ const WordGame = () => {
         [removeWord]
     );
 
-    const getScoreColor = (score, maxScore) => {
-        const percentage = (score / maxScore) * 100;
-        if (percentage < 50) return 'red';
-        if (percentage <= 75) return 'orange';
-        if (percentage < 100) return 'blue';
-        return 'green';
-    };
-
     const controlsContainerStyle = {
         display: 'flex',
         justifyContent: 'space-between',
@@ -146,6 +135,7 @@ const WordGame = () => {
     return (
         <div style={{ padding: '20px' }}>
             <CustomDragLayer />
+            <BasicScore currentScore={currentScore} maxScore={maxScore} />
             <WordGrid
                 grid={grid}
                 words={words}
@@ -171,12 +161,6 @@ const WordGame = () => {
                 />
                 <CheckButton onClick={handleCheckWords} disabled={!hasPlacedWords} />
             </div>
-            <Scores
-                scores={scores}
-                maxScore={maxScore}
-                controlsWidth={controlsWidth}
-                getScoreColor={getScoreColor}
-            />
             {showModal && <FoundWordsModal words={foundWords} onClose={() => setShowModal(false)} />}
         </div>
     );
