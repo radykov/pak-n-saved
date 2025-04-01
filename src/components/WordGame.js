@@ -6,10 +6,10 @@ import WordGrid from './WordGrid';
 import CustomDragLayer from './CustomDragLayer';
 import WordsList from './WordsList';
 import BasicScore from './BasicScore';
-import { ResetButton, RotateButton, CheckButton } from './ActionButtons';
+import { RotateButton } from './ActionButtons';
 
 const WordGame = () => {
-    const { startingWords: initialWords, gridDimensions, id, maxScore } = useStartingWordInfo();
+    const { startingWords: initialWords, gridDimensions, maxScore } = useStartingWordInfo();
     const [words, setWords] = useState(initialWords);
     const [selectedWordId, setSelectedWordId] = useState(null);
     const selectedWord = words.find((w) => w.id === selectedWordId);
@@ -32,8 +32,6 @@ const WordGame = () => {
     const canPlaceWord = useCanPlaceWord(grid);
     const rotateWord = useRotateWord(canPlaceWord, setGrid, setWords, grid);
 
-    const hasPlacedWords = words.some((word) => word.isPlaced);
-
     const drop = useDropWord({
         gridRef,
         gridDimensions,
@@ -53,21 +51,6 @@ const WordGame = () => {
         setCurrentScore(found.length);
     }, [grid, initialWords]);
 
-    const handleCheckWords = () => {
-        setShowModal(true);
-    };
-
-    const handleReset = () => {
-        setGrid(
-            Array(gridDimensions.height)
-                .fill()
-                .map(() => Array(gridDimensions.width).fill(''))
-        );
-        setWords(initialWords.map((word) => ({ ...word, isPlaced: false, x: null, y: null })));
-        setSelectedWordId(null);
-        setPreviewPosition(null);
-        setShowModal(false);
-    };
 
     const setGridRef = useCallback(
         (el) => {
@@ -154,12 +137,10 @@ const WordGame = () => {
                 onDragEnd={handleDragEnd}
             />
             <div style={controlsContainerStyle}>
-                <ResetButton onClick={handleReset} disabled={!hasPlacedWords} />
                 <RotateButton
                     onClick={() => selectedWord && rotateWord(selectedWord)}
                     disabled={!selectedWord}
                 />
-                <CheckButton onClick={handleCheckWords} disabled={!hasPlacedWords} />
             </div>
             {showModal && <FoundWordsModal words={foundWords} onClose={() => setShowModal(false)} />}
         </div>
