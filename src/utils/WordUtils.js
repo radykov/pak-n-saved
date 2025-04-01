@@ -77,7 +77,7 @@ const findWordsInGrid = (grid, initialWords) => {
 
 function useStartingWordInfo() {
     const [data] = useState(() => {
-        const wordData = words_and_grid['default'];
+        const wordData = words_and_grid['1'];
         console.log(words_and_grid);
         console.log(wordData);
         const startingWords = wordData['words'].map((word, i) => (

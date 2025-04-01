@@ -11,7 +11,6 @@ const Game = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding: '20px 0',
             }}
         >
             <WordGame />

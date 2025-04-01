@@ -1,14 +1,13 @@
 {
-    "default": {
+    "1": {
         "words": [
-            "REACT",
-            "DRAG",
-            "DROP",
-            "GAME"
+            "CAN",
+            "YOU",
+            "WIN"
         ],
         "gridDimensions": {
-            "width": 5,
-            "height": 5
+            "width": 3,
+            "height": 3
         },
         "maxScore": 5
     }

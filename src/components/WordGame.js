@@ -108,7 +108,7 @@ const WordGame = () => {
 
     const controlsContainerStyle = {
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
         padding: '0',
         width: controlsWidth || 'auto',
@@ -116,7 +116,7 @@ const WordGame = () => {
     };
 
     return (
-        <div style={{ padding: '20px' }}>
+        <div>
             <CustomDragLayer />
             <BasicScore currentScore={currentScore} maxScore={maxScore} />
             <WordGrid
