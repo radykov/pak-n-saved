@@ -1,6 +1,6 @@
 import englishWords from 'an-array-of-english-words';
 import words_and_grid from '../data/words_and_grid.json';
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useGameContext } from '../contexts/GameContext';
 const DICTIONARY = new Set(englishWords.map(word => word.toLowerCase()));
 
