@@ -41,6 +41,7 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
         alignItems: 'center',
         justifyContent: 'center',
         lineHeight: '1',
+        touchAction: 'none',
         ...TOUCH_STYLE
     };
 
