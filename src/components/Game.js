@@ -1,6 +1,6 @@
 // /src/components/Game.js
 import React from 'react';
-import { mobileView } from '../styles';
+import { mobileView, MAX_WIDTH_STYLE } from '../styles';
 import WordGame from './WordGame'
 import { GameProvider } from '../contexts/GameContext';
 
@@ -14,6 +14,7 @@ const Game = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
+
                 }}
             >
                 <WordGame />

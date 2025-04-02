@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { MAX_WIDTH_STYLE } from '../styles';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord, useDropWord } from '../hooks/GridPlaceHooks';
 import FoundWordsModal from './FoundWordsModal';
@@ -154,11 +155,11 @@ const WordGame = () => {
 
     // Container style for the grid and nav buttons
     const controlsContainerStyle = {
+        ...MAX_WIDTH_STYLE,
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        width: '100%',
         margin: unplacedWords.length !== 0 ? '20px auto 0' : ''
     };
 
@@ -176,7 +177,7 @@ const WordGame = () => {
                 {currentScore === 0 && startingText ? (
                     <StartingMessage message={startingText} />
                 ) : (
-                    <BasicScore currentScore={currentScore} maxScore={maxScore} />
+                    <BasicScore currentScore={currentScore} maxScore={maxScore} savedScore={savedScore} />
                 )}
                 {currentScore > 0 && (
                     <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ScoreHelper from '../utils/ScoreHelper';
 
-const BasicScore = ({ currentScore, maxScore }) => {
+const BasicScore = ({ currentScore, maxScore, savedScore }) => {
     const [animate, setAnimate] = useState(false);
 
     // Trigger animation whenever currentScore changes
@@ -24,16 +24,30 @@ const BasicScore = ({ currentScore, maxScore }) => {
         transform: animate ? 'scale(1.2)' : 'scale(1)',
     };
 
+    // Determine the best score text based on the provided conditions
+    let bestText = "";
+    if (currentScore >= savedScore && currentScore > 0) {
+        bestText = "Best";
+    } else if (savedScore !== 0 && savedScore > currentScore) {
+        bestText = `Best: ${savedScore}`;
+    }
+
     return (
-        <div style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'center',
-            color,
-            margin: '20px 0'
-        }}>
-            <span style={scoreStyle}>{currentScore}</span>
-            <span style={{ fontSize: '14px', marginLeft: '2px' }}>/{maxScore}</span>
+        <div style={{ textAlign: 'center', margin: '20px 0' }}>
+            <div style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                justifyContent: 'center',
+                color,
+            }}>
+                <span style={scoreStyle}>{currentScore}</span>
+                <span style={{ fontSize: '14px', marginLeft: '2px' }}>/{maxScore}</span>
+            </div>
+            {bestText && (
+                <div style={{ fontSize: '16px', color, marginTop: '8px' }}>
+                    {bestText}
+                </div>
+            )}
         </div>
     );
 };

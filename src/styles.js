@@ -5,6 +5,9 @@ const WHITE = '#ffffff';
 const BLACK = '#000000';
 export const DISABLED_BUTTON_BACKGROUND = '#cccccc';
 export const CHEVRON_SIZE = 19;
+export const MAX_WIDTH_STYLE = {
+    width: 'min(480px, 100vw)',
+}
 const GENERIC_BUTTON_STYLES = {
     display: 'flex',
     alignItems: 'center',
@@ -57,8 +60,8 @@ export const theme = {
 };
 
 export const mobileView = {
+    ...MAX_WIDTH_STYLE,
     touchAction: 'none',
-    maxWidth: '480px',
     margin: '0 auto',
     padding: '0 10px',
 };
