@@ -7,6 +7,7 @@ export const DISABLED_BUTTON_BACKGROUND = '#cccccc';
 export const CHEVRON_SIZE = 19;
 export const MAX_WIDTH_STYLE = {
     width: 'min(480px, 100vw)',
+    boxSizing: 'border-box'
 }
 const GENERIC_BUTTON_STYLES = {
     display: 'flex',
