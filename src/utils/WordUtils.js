@@ -101,6 +101,7 @@ const useStartingWordInfo = () => {
             startingText: wordData.startingText,
             wordDroppedText: wordData.wordDroppedText,
             endingText: wordData.endingText,
+            hasNextLevel,
         };
     }, [currentLevelId]);
 

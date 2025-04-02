@@ -15,7 +15,7 @@ import FoundWords from './FoundWords';
 
 const WordGame = () => {
     const { currentLevelId, setCurrentLevelId, savedScores, updateSavedScore } = useGameContext();
-    const { startingWords: initialWords, wordDroppedText, endingText, gridDimensions, startingText, maxScore } = useStartingWordInfo(currentLevelId);
+    const { startingWords: initialWords, wordDroppedText, endingText, gridDimensions, startingText, maxScore, hasNextLevel } = useStartingWordInfo(currentLevelId);
     const savedScore = savedScores[currentLevelId] || 0;
     console.log(JSON.stringify(savedScores));
 
@@ -142,7 +142,7 @@ const WordGame = () => {
     };
 
     // Use the currentScore rather than savedScore to determine if the level can be passed.
-    const { canPass } = ScoreHelper.getScoreData(Math.max(currentScore, savedScore), maxScore);
+    const { canPass } = !hasNextLevel ? { canPass: false } : ScoreHelper.getScoreData(Math.max(currentScore, savedScore), maxScore);
 
     // Container style for the grid and nav buttons.
     const controlsContainerStyle = {

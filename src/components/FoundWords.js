@@ -1,5 +1,4 @@
 import React from 'react';
-import Words from './Words';
 
 const FoundWords = ({ words }) => {
     if (!words || words.length === 0) return null;
