@@ -1,5 +1,5 @@
 import {
-    TOUCH_STYLE, onTouchStart, onContextMenu
+    TOUCH_STYLE
 
 } from "./constants";
 const Words = ({ words }) => {
@@ -9,8 +9,6 @@ const Words = ({ words }) => {
     return (
         words.map((word, index) => (
             <div
-                onTouchStart={onTouchStart}
-                onContextMenu={onContextMenu}
                 key={index}
                 style={{
                     ...TOUCH_STYLE,
