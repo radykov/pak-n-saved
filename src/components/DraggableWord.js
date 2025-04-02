@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { onTouchStart, TOUCH_STYLE } from './constants';
+import { onTouchStart, TOUCH_STYLE, onContextMenu } from './constants';
 
 const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
     const [{ isDragging }, drag, preview] = useDrag({
@@ -51,7 +51,7 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
             style={style}
             onClick={() => onSelect(word)}
             onTouchStart={onTouchStart}
-            onContextMenu={(e) => e.preventDefault()}
+            onContextMenu={onContextMenu}
         >
             {word.text}
         </div>

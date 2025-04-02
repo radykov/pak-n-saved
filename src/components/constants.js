@@ -5,7 +5,15 @@ export const onTouchStart = (e) => {
     e.preventDefault();
 };
 
+export const onContextMenu = (e) => {
+    e.preventDefault();
+};
+
 export const TOUCH_STYLE = {
     touchAction: 'none',
-    userSelect: 'none'
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    KhtmlUserSelect: 'none',
+    MozUserSelect: 'none',
+    msUserSelect: 'none',
 };
