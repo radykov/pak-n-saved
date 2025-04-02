@@ -13,18 +13,18 @@ const HTML5toTouch = {
       id: 'html5',
       backend: HTML5Backend,
       preview: true,
-      options: { enableMouseEvents: true } // Fixed typo from entableMouseEvents
+      options: { enableMouseEvents: true, touchSlop: 0 } // Fixed typo from entableMouseEvents
     },
     {
       id: 'touch',
       backend: TouchBackend,
       options: {
+        touchSlop: 0,
         enableTouchEvents: true,
         enableMouseEvents: true, // Enable mouse events in touch backend
         delayTouchStart: 0,
         delayMouseStart: 0,
         ignoreContextMenu: true,
-        touchSlop: 0, // Reduce the distance before a touch is recognized as a drag
         enableKeyboardEvents: false, // Disable keyboard events if not needed
         enableHoverOutsideTarget: false // Optimization
       },

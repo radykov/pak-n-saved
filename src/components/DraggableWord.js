@@ -18,12 +18,6 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
         },
     });
 
-    const handleTouchStart = (event) => {
-        event.preventDefault(); // Prevent scrolling
-        drag(event); // Manually trigger drag start
-    };
-
-
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
     }, [preview]);
@@ -55,8 +49,8 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
         <div
             ref={drag}
             style={style}
-            // onClick={() => onSelect(word)}
-            onTouchStart={handleTouchStart}
+            onClick={() => onSelect(word)}
+            onTouchStart={(event) => event.preventDefault()}
             onContextMenu={onContextMenu}
         >
             {word.text}
