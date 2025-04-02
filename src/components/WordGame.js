@@ -167,7 +167,9 @@ const WordGame = () => {
     return (
         <div>
             <CustomDragLayer />
-            <div style={{ position: 'relative', width: '100%', margin: '20px 0', textAlign: 'center' }}>
+            <div style={{
+                position: 'relative', width: '100%', margin: '20px 0', textAlign: 'center', boxSizing: 'border-box'     // Ensures padding is counted within width
+            }}>
                 <TopContent
                     hasPlacedWords={hasPlacedWords}
                     savedScore={savedScore}
