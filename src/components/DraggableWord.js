@@ -51,6 +51,7 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
             style={style}
             onClick={() => onSelect(word)}
             onTouchStart={onTouchStart}
+            onContextMenu={(e) => e.preventDefault()}
         >
             {word.text}
         </div>

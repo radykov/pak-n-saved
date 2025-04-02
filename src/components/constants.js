@@ -6,5 +6,6 @@ export const onTouchStart = (e) => {
 };
 
 export const TOUCH_STYLE = {
-    touchAction: 'none'
+    touchAction: 'none',
+    userSelect: 'none'
 };
