@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ScoreHelper from '../utils/ScoreHelper';
 
 const BasicScore = ({ currentScore, maxScore }) => {
     const [animate, setAnimate] = useState(false);
@@ -13,16 +14,8 @@ const BasicScore = ({ currentScore, maxScore }) => {
         return () => clearTimeout(timer);
     }, [currentScore]);
 
-    const percentage = (currentScore / maxScore) * 100;
-    let color;
-
-    if (percentage < 50) {
-        color = '#ff4444'; // red
-    } else if (percentage < 80) {
-        color = '#ffa500'; // orange
-    } else {
-        color = '#4CAF50'; // green
-    }
+    // Get color from ScoreHelper based on current score and max score
+    const { color } = ScoreHelper.getScoreData(currentScore, maxScore);
 
     const scoreStyle = {
         fontSize: '24px',

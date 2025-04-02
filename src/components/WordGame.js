@@ -11,6 +11,7 @@ import ViewWordsButton from './ViewWordsButton';
 import StartingMessage from './StartingMessage';
 import { useGameContext } from '../contexts/GameContext';
 import { BackButton, NextButton } from './NavButtons';
+import ScoreHelper from '../utils/ScoreHelper';
 
 const WordGame = () => {
     const { currentLevelId, setCurrentLevelId, savedScores, updateSavedScore } = useGameContext();
@@ -148,6 +149,9 @@ const WordGame = () => {
         setCurrentLevelId(newLevelId.toString());
     };
 
+    // Get button state from ScoreHelper based on current score and max score
+    const { canPass } = ScoreHelper.getScoreData(currentScore, maxScore);
+
     // Container style for the grid and nav buttons
     const controlsContainerStyle = {
         display: 'flex',
@@ -164,8 +168,6 @@ const WordGame = () => {
         display: 'flex',
         justifyContent: 'center'
     };
-
-    const isNextEnabled = savedScore >= 0.8 * maxScore;
 
     return (
         <div>
@@ -211,7 +213,7 @@ const WordGame = () => {
                     />
                 </div>
                 <div style={navButtonWrapperStyle}>
-                    <NextButton onClick={handleNext} isEnabled={isNextEnabled} />
+                    <NextButton onClick={handleNext} isEnabled={canPass} />
                 </div>
             </div>
 
