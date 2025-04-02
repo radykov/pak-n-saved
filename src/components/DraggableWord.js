@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { onTouchStart, TOUCH_STYLE, onContextMenu } from './constants';
+import { TOUCH_STYLE, onContextMenu } from './constants';
 
 const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
     const [{ isDragging }, drag, preview] = useDrag({
@@ -17,6 +17,12 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
             onDragEnd(item, monitor.getDropResult());
         },
     });
+
+    const handleTouchStart = (event) => {
+        event.preventDefault(); // Prevent scrolling
+        drag(event); // Manually trigger drag start
+    };
+
 
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
@@ -49,8 +55,8 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
         <div
             ref={drag}
             style={style}
-            onClick={() => onSelect(word)}
-            onTouchStart={onTouchStart}
+            // onClick={() => onSelect(word)}
+            onTouchStart={handleTouchStart}
             onContextMenu={onContextMenu}
         >
             {word.text}
