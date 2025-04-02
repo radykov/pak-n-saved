@@ -19,8 +19,11 @@ const HTML5toTouch = {
       id: 'touch',
       backend: TouchBackend,
       options: {
-        enableTouchEvents: true, delayTouchStart: 0,  // Remove touch delay
+        enableTouchEvents: true,
         usePreview: false,
+        delayTouchStart: 0, // Should already be instant
+        delayMouseStart: 0, // Just in case
+        ignoreContextMenu: true, // Helps prevent long-press behavior
       },
       preview: true
     }

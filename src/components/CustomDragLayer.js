@@ -4,6 +4,7 @@ const CustomDragLayer = () => {
     const { isDragging, item, currentOffset } = useDragLayer((monitor) => ({
         item: monitor.getItem(),
         currentOffset: monitor.getClientOffset(),
+        initialClientOffset: monitor.getInitialClientOffset(),
         isDragging: monitor.isDragging(),
     }));
 
@@ -39,6 +40,7 @@ const CustomDragLayer = () => {
         lineHeight: '1',
         fontSize,
         borderWidth: '4px',
+        visibility: item ? 'visible' : 'hidden', // Ensures rendering starts ASAP
     };
 
     return (
