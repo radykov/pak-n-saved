@@ -49,7 +49,7 @@ const WordGame = () => {
         setCurrentScore(0);
         setSelectedWordId(null);
     }, [currentLevelId, initialWords, gridDimensions]);
-
+    const [initialPosition, setInitialPosition] = useState(null);
     const placeWord = usePlaceWord(grid, setGrid, words, setWords);
     const removeWord = useRemoveWord(grid, setGrid, words, setWords);
     const canPlaceWord = useCanPlaceWord(grid);
@@ -87,6 +87,11 @@ const WordGame = () => {
 
     const handleWordSelect = (word) => {
         setSelectedWordId(word.id);
+        const element = document.getElementById(`word-${word.id}`);
+        if (element) {
+            const rect = element.getBoundingClientRect();
+            setInitialPosition({ x: rect.left, y: rect.top });
+        }
     };
 
     const getPreviewLetter = useCallback((x, y, previewPosition) => {
@@ -123,6 +128,10 @@ const WordGame = () => {
         (item, result) => {
             if (!result) {
                 removeWord(item);
+            }
+            else {
+                setSelectedWordId(null);
+                setInitialPosition(null);
             }
         },
         [removeWord]

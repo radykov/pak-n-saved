@@ -7,7 +7,7 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
     const [{ isDragging }, drag, preview] = useDrag({
         type: 'WORD',
         item: () => {
-            onSelect(word);
+            onSelect(word); // Called when drag starts
             return { type: 'WORD', ...word };
         },
         collect: (monitor) => ({
@@ -47,9 +47,10 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
 
     return (
         <div
+            id={`word-${word.id}`} // Added unique id
             ref={drag}
             style={style}
-            onClick={() => onSelect(word)}
+            onClick={() => onSelect(word)} // Called when clicked
             onTouchStart={(event) => event.preventDefault()}
             onContextMenu={onContextMenu}
         >
