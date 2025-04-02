@@ -7,7 +7,7 @@ const CustomDragLayer = () => {
         isDragging: monitor.isDragging(),
     }));
 
-    if (!isDragging || !currentOffset) {
+    if (!isDragging) {
         return null;
     }
 
