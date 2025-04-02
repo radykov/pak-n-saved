@@ -3,7 +3,7 @@ import { useDragLayer } from 'react-dnd';
 const CustomDragLayer = () => {
     const { isDragging, item, currentOffset } = useDragLayer((monitor) => ({
         item: monitor.getItem(),
-        currentOffset: monitor.getSourceClientOffset(),
+        currentOffset: monitor.getClientOffset(),
         isDragging: monitor.isDragging(),
     }));
 
