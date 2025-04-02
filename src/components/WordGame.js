@@ -2,22 +2,21 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { MAX_WIDTH_STYLE } from '../styles';
 import { findWordsInGrid, useStartingWordInfo } from '../utils/WordUtils';
 import { usePlaceWord, useCanPlaceWord, useRemoveWord, useRotateWord, useDropWord } from '../hooks/GridPlaceHooks';
-import FoundWordsModal from './FoundWordsModal';
 import WordGrid from './WordGrid';
 import CustomDragLayer from './CustomDragLayer';
 import WordsList from './WordsList';
-import BasicScore from './BasicScore';
+import TopContent from './TopContent';
 import { RotateButton } from './ActionButtons';
-import ViewWordsButton from './ViewWordsButton';
-import StartingMessage from './StartingMessage';
 import { useGameContext } from '../contexts/GameContext';
 import { BackButton, NextButton } from './NavButtons';
 import ScoreHelper from '../utils/ScoreHelper';
+import FoundWords from './FoundWords';
 
 const WordGame = () => {
     const { currentLevelId, setCurrentLevelId, savedScores, updateSavedScore } = useGameContext();
-    const { startingWords: initialWords, gridDimensions, startingText, maxScore } = useStartingWordInfo(currentLevelId);
+    const { startingWords: initialWords, wordDroppedText, endingText, gridDimensions, startingText, maxScore } = useStartingWordInfo(currentLevelId);
     const savedScore = savedScores[currentLevelId] || 0;
+    console.log(JSON.stringify(savedScores));
 
     const [words, setWords] = useState(initialWords);
     const [selectedWordId, setSelectedWordId] = useState(null);
@@ -29,7 +28,6 @@ const WordGame = () => {
     );
     const [previewPosition, setPreviewPosition] = useState(null);
     const [foundWords, setFoundWords] = useState([]);
-    const [showModal, setShowModal] = useState(false);
     const [isDraggingPlacedWord, setIsDraggingPlacedWord] = useState(false);
     const [controlsWidth, setControlsWidth] = useState(null);
     const [currentScore, setCurrentScore] = useState(0);
@@ -46,7 +44,6 @@ const WordGame = () => {
         );
         setPreviewPosition(null);
         setFoundWords([]);
-        setShowModal(false);
         setIsDraggingPlacedWord(false);
         setCurrentScore(0);
         setSelectedWordId(null);
@@ -69,19 +66,12 @@ const WordGame = () => {
         setSelectedWordId,
     });
 
-    // Automatically update score when grid changes
+    // Automatically update score when grid changes.
     useEffect(() => {
         const found = findWordsInGrid(grid, initialWords);
         setFoundWords(found);
         setCurrentScore(found.length);
     }, [grid, initialWords]);
-
-    // Update max score in context if currentScore exceeds the stored maximum.
-    useEffect(() => {
-        if (currentScore > savedScore) {
-            updateSavedScore(currentLevelId, currentScore);
-        }
-    }, [currentScore, savedScore, currentLevelId, updateSavedScore]);
 
     const setGridRef = useCallback(
         (el) => {
@@ -137,23 +127,23 @@ const WordGame = () => {
         [removeWord]
     );
 
-    // Handlers for navigation buttons
+    // Handlers for navigation buttons.
     const handleBack = () => {
-        // Decrement the level id (convert to number, subtract, then update context)
         const newLevelId = Number(currentLevelId) - 1;
         setCurrentLevelId(newLevelId.toString());
     };
 
     const handleNext = () => {
-        // Increment the level id (convert to number, add, then update context)
+        // Save the current level's score before moving on.
+        updateSavedScore(currentLevelId, currentScore);
         const newLevelId = Number(currentLevelId) + 1;
         setCurrentLevelId(newLevelId.toString());
     };
 
-    // Get button state from ScoreHelper based on current score and max score
-    const { canPass } = ScoreHelper.getScoreData(currentScore, maxScore);
+    // Use the currentScore rather than savedScore to determine if the level can be passed.
+    const { canPass } = ScoreHelper.getScoreData(Math.max(currentScore, savedScore), maxScore);
 
-    // Container style for the grid and nav buttons
+    // Container style for the grid and nav buttons.
     const controlsContainerStyle = {
         ...MAX_WIDTH_STYLE,
         display: 'flex',
@@ -170,20 +160,25 @@ const WordGame = () => {
         justifyContent: 'center'
     };
 
+    // Determine if any words are placed on the grid.
+    const hasPlacedWords = words.some(word => word.isPlaced);
+
     return (
         <div>
             <CustomDragLayer />
             <div style={{ position: 'relative', width: '100%', margin: '20px 0', textAlign: 'center' }}>
-                {currentScore === 0 && startingText ? (
-                    <StartingMessage message={startingText} />
-                ) : (
-                    <BasicScore currentScore={currentScore} maxScore={maxScore} savedScore={savedScore} />
-                )}
-                {currentScore > 0 && (
-                    <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
-                        <ViewWordsButton onClick={() => setShowModal(true)} />
-                    </div>
-                )}
+                <TopContent
+                    hasPlacedWords={hasPlacedWords}
+                    savedScore={savedScore}
+                    canPass={canPass}
+                    startingText={startingText}
+                    wordDroppedText={wordDroppedText}
+                    endingText={endingText}
+                    currentScore={currentScore}
+                    maxScore={maxScore}
+                />
+                {/* Display the found words directly under TopContent */}
+                <FoundWords words={foundWords} />
             </div>
             <WordGrid
                 grid={grid}
@@ -202,7 +197,6 @@ const WordGame = () => {
                 onSelect={handleWordSelect}
                 onDragEnd={handleDragEnd}
             />
-
             <div style={controlsContainerStyle}>
                 <div style={navButtonWrapperStyle}>
                     <BackButton onClick={handleBack} isEnabled={currentLevelId !== "1"} />
@@ -217,8 +211,6 @@ const WordGame = () => {
                     <NextButton onClick={handleNext} isEnabled={canPass} />
                 </div>
             </div>
-
-            {showModal && <FoundWordsModal words={foundWords} onClose={() => setShowModal(false)} />}
         </div>
     );
 };

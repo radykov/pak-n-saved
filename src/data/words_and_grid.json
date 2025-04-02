@@ -10,8 +10,8 @@
             "height": 3
         },
         "maxScore": 2,
-        "startingText": "Drag and drop words on the grid to create new words horizontally, vertically and diagonally.",
-        "wordDroppedText": "You can drag words after you've placed them.",
+        "startingText": "Hold and drag words on the grid to create new words horizontally, vertically and diagonally.",
+        "wordDroppedText": "You can drag words around the grid and off the grid after you've placed them.",
         "endingText": "Press the right arrow at the bottom to continue"
     },
     "2": {
@@ -39,6 +39,6 @@
             "height": 4
         },
         "maxScore": 5,
-        "startingText": "Rotate words by selecting them in the grid or from the list and clicking the rotate button at the bottom"
+        "startingText": "Rotate words by selecting them in the list or grid and clicking the rotate button at the bottom"
     }
 }

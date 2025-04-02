@@ -91,12 +91,16 @@ const useStartingWordInfo = () => {
             orientation: 'horizontal'
         }));
 
+        const hasNextLevel = words_and_grid[Number(level) + 1] != null;
+
         return {
             startingWords,
             gridDimensions: wordData.gridDimensions,
             id: "default",
             maxScore: wordData.maxScore,
-            startingText: wordData.startingText
+            startingText: wordData.startingText,
+            wordDroppedText: wordData.wordDroppedText,
+            endingText: wordData.endingText,
         };
     }, [currentLevelId]);
 
