@@ -13,29 +13,61 @@ const HTML5toTouch = {
       id: 'html5',
       backend: HTML5Backend,
       preview: true,
-      options: { entableMouseEvents: true }
+      options: { enableMouseEvents: true } // Fixed typo from entableMouseEvents
     },
     {
       id: 'touch',
       backend: TouchBackend,
       options: {
         enableTouchEvents: true,
-        usePreview: false,
-        delayTouchStart: 0, // Should already be instant
-        delayMouseStart: 0, // Just in case
-        ignoreContextMenu: true, // Helps prevent long-press behavior
+        enableMouseEvents: true, // Enable mouse events in touch backend
+        delayTouchStart: 0,
+        delayMouseStart: 0,
+        ignoreContextMenu: true,
+        touchSlop: 0, // Reduce the distance before a touch is recognized as a drag
+        enableKeyboardEvents: false, // Disable keyboard events if not needed
+        enableHoverOutsideTarget: false // Optimization
       },
       preview: true
     }
-  ]
+  ],
+  // Add this transition detection function for better backend switching
+  transition: (event, monitor) => {
+    // Use this to debug which backend is being used
+    // console.log("Event type:", event.type);
+    return getBackendOptions(event, monitor);
+  }
 };
+
+// Add this function after the HTML5toTouch configuration
+function getBackendOptions(event, monitor) {
+  // Return 'touch' for touch events, 'html5' otherwise
+  if (event && (event.type.startsWith('touch') ||
+    (window.navigator &&
+      window.navigator.userAgent &&
+      window.navigator.userAgent.match(/mobile|tablet|android|ipad|iphone/i)))) {
+    return 'touch';
+  }
+  return 'html5';
+}
+
 function App() {
   return (
     <DndProvider backend={MultiBackend} options={HTML5toTouch}>
-      < TopHeader />
-      <Game />
+      <div style={
+        {
+          WebkitUserSelect: 'none',
+          MsUserSelect: 'none',
+          userSelect: 'none',
+          WebkitTouchCallout: 'none',
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation'
+        }
+      }>
+        <TopHeader />
+        <Game />
+      </div>
     </DndProvider >
   );
 }
-
 export default App;
