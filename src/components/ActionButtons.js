@@ -1,6 +1,7 @@
 import React from 'react';
 import { RotateCw } from 'lucide-react';
 import { DISABLED_BUTTON_STYLE, ENABLED_BUTTON_STYLE, CHEVRON_SIZE } from '../styles'; // Adjust the path based on your project structure
+import Tooltip from './Tooltip';
 
 function getStyle(disabled) {
     return disabled ? DISABLED_BUTTON_STYLE : ENABLED_BUTTON_STYLE;
