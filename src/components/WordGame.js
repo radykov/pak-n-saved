@@ -11,6 +11,7 @@ import { useGameContext } from '../contexts/GameContext';
 import { BackButton, NextButton } from './NavButtons';
 import ScoreHelper from '../utils/ScoreHelper';
 import FoundWords from './FoundWords';
+// import solve from '../utils/Solver';
 
 const WordGame = () => {
     const { currentLevelId, setCurrentLevelId, savedScores, updateSavedScore } = useGameContext();

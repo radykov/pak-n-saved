@@ -1,5 +1,5 @@
 import { findWordsInGrid } from './WordUtils';
-
+import words_and_grid_json from '../data/words_and_grid.json';
 // Create an empty grid (2D array) with given width and height
 function createEmptyGrid(width, height) {
     const grid = [];
@@ -68,10 +68,8 @@ function removeWord(grid, word, placements) {
     word.isPlaced = false;
 }
 
-
 // Backtracking algorithm to place all words
 function backtrack(grid, words, index = 0) {
-
     // Variables to track the best configuration found
     let bestGrid = null;
     let bestFoundArray = [];
@@ -84,7 +82,7 @@ function backtrack(grid, words, index = 0) {
             // Deep copy the grid so that subsequent changes don't affect our saved version
             bestGrid = grid.map(row => [...row]);
         }
-        return;
+        return { bestGrid, bestFoundArray };
     }
 
     const word = words[index];
@@ -99,7 +97,12 @@ function backtrack(grid, words, index = 0) {
                     // Place the word on the grid
                     const placements = placeWord(grid, word, x, y, orientation);
                     // Recurse to place the next word
-                    backtrack(grid, words, index + 1);
+                    const result = backtrack(grid, words, index + 1);
+                    // Check if we found a better configuration
+                    if (result && result.bestFoundArray.length > bestFoundArray.length) {
+                        bestFoundArray = result.bestFoundArray;
+                        bestGrid = result.bestGrid;
+                    }
                     // Backtrack: remove the word using recorded placements
                     removeWord(grid, word, placements);
                 }
@@ -109,30 +112,35 @@ function backtrack(grid, words, index = 0) {
     return { bestGrid, bestFoundArray };
 }
 
-function solve(initialWords, gridWidth, gridHeight) {
+// Updated solver: takes an array of words (strings) as input
+function solve(wordList, gridWidth, gridHeight) {
+    // Convert array of strings to objects that the algorithm expects
+    const words = wordList.map(word => ({
+        text: word,
+        isPlaced: false,
+        x: 0,
+        y: 0,
+        orientation: 'horizontal'
+    }));
     const grid = createEmptyGrid(gridWidth, gridHeight);
-    backtrack(grid, initialWords);
+    return backtrack(grid, words);
 }
-
+let finishedFinding = false;
+let runOnStart = true
 // Testing, change to true to test and false to skip
-if (true) {
-    // Sample initial words array
-    const initialWords = [
-        { id: '1', text: 'REACT', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
-        { id: '2', text: 'DRAG', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
-        { id: '3', text: 'DROP', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
-        { id: '4', text: 'GAME', isPlaced: false, x: 0, y: 0, orientation: 'horizontal' },
-    ];
-
-    const { bestGrid, bestFoundArray } = solve(initialWords, 5, 5);
-
-    // Output the best grid configuration and found words
-    console.log('Best Grid:');
-    console.table(bestGrid);
-    console.log('Best Found Words Array:', bestFoundArray);
+if (runOnStart && !finishedFinding) {
+    let level = 1;
+    let data = words_and_grid_json[level.toString()];
+    while (data != null) {
+        const wordList = data.words;
+        const { bestGrid, bestFoundArray } = solve(wordList, data.gridDimensions.width, data.gridDimensions.height);
+        console.log('Best Grid:');
+        console.table(bestGrid);
+        console.log('Best Found Words Array:', bestFoundArray);
+        level += 1;
+        data = words_and_grid_json[level.toString()];
+    }
+    finishedFinding = true;
 }
 
 export default solve;
-
-
-
