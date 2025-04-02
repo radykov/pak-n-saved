@@ -25,6 +25,7 @@ const CustomDragLayer = memo(({ selectedWord, initialPosition }) => {
             y: initialSourceOffset.y + diff.y,
         };
     } else if (selectedWord && initialPosition) {
+        console.log("clicekd to drag");
         // When selected but not dragging, use initial position
         word = selectedWord;
         position = initialPosition;

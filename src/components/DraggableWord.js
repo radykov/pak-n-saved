@@ -50,7 +50,7 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
             id={`word-${word.id}`} // Added unique id
             ref={drag}
             style={style}
-            onClick={() => onSelect(word)} // Called when clicked
+            onMouseDown={() => onSelect(word)} // Called when clicked
             onTouchStart={(event) => event.preventDefault()}
             onContextMenu={onContextMenu}
         >
