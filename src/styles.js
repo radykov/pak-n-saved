@@ -64,5 +64,5 @@ export const mobileView = {
     ...MAX_WIDTH_STYLE,
     touchAction: 'none',
     margin: '0 auto',
-    padding: '0 10px',
+    padding: '0 20px',
 };
