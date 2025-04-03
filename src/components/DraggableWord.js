@@ -3,7 +3,7 @@ import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { TOUCH_STYLE, onContextMenu } from './constants';
 
-const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
+const DraggableWord = ({ word, onDragEnd, isSelected, onSelect, onDeselect }) => {
     const [{ isDragging }, drag, preview] = useDrag({
         type: 'WORD',
         item: () => {
@@ -51,6 +51,7 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect }) => {
             ref={drag}
             style={style}
             onMouseDown={() => onSelect(word)} // Called when clicked
+            onMouseUp={() => onDeselect()}
             onTouchStart={(event) => event.preventDefault()}
             onContextMenu={onContextMenu}
         >

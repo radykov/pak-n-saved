@@ -17,7 +17,6 @@ const WordGame = () => {
     const { currentLevelId, setCurrentLevelId, savedScores, updateSavedScore } = useGameContext();
     const { startingWords: initialWords, wordDroppedText, endingText, gridDimensions, startingText, maxScore, hasNextLevel } = useStartingWordInfo(currentLevelId);
     const savedScore = savedScores[currentLevelId] || 0;
-    console.log(JSON.stringify(savedScores));
 
     const [words, setWords] = useState(initialWords);
     const [selectedWordId, setSelectedWordId] = useState(null);
@@ -94,6 +93,11 @@ const WordGame = () => {
         }
     };
 
+    const handleWordDeselect = () => {
+        setSelectedWordId(null);
+        setInitialPosition(null);
+    }
+
     const getPreviewLetter = useCallback((x, y, previewPosition) => {
         if (!previewPosition?.word) return null;
 
@@ -130,8 +134,7 @@ const WordGame = () => {
                 removeWord(item);
             }
             else {
-                setSelectedWordId(null);
-                setInitialPosition(null);
+                handleWordDeselect()
             }
         },
         [removeWord]
@@ -175,7 +178,7 @@ const WordGame = () => {
 
     return (
         <div>
-            <CustomDragLayer />
+            <CustomDragLayer selectedWord={selectedWord} initialPosition={initialPosition} />
             <div style={{
                 position: 'relative', width: '100%', margin: '20px 0', textAlign: 'center', boxSizing: 'border-box'     // Ensures padding is counted within width
             }}>
@@ -207,6 +210,7 @@ const WordGame = () => {
                 words={unplacedWords}
                 selectedWordId={selectedWordId}
                 onSelect={handleWordSelect}
+                onDeselect={handleWordDeselect}
                 onDragEnd={handleDragEnd}
             />
             <div style={controlsContainerStyle}>

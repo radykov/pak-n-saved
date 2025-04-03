@@ -2,6 +2,7 @@ import { useDragLayer } from 'react-dnd';
 import { memo } from 'react';
 
 const CustomDragLayer = memo(({ selectedWord, initialPosition }) => {
+    console.log(initialPosition);
     const {
         isDragging,
         item,

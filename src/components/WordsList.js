@@ -1,7 +1,7 @@
 import React from 'react';
 import DraggableWord from './DraggableWord';
 
-const WordsList = ({ words, selectedWordId, onSelect, onDragEnd }) => {
+const WordsList = ({ words, selectedWordId, onSelect, onDragEnd, onDeselect }) => {
     return (
         <div
             style={{
@@ -19,6 +19,7 @@ const WordsList = ({ words, selectedWordId, onSelect, onDragEnd }) => {
                     word={word}
                     onDragStart={() => { }}
                     onDragEnd={onDragEnd}
+                    onDeselect={onDeselect}
                     isSelected={selectedWordId === word.id}
                     onSelect={onSelect}
                 />
