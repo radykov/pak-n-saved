@@ -14,15 +14,23 @@ const WordsList = ({ words, selectedWordId, onSelect, onDragEnd, onDeselect }) =
             }}
         >
             {words.map(word => (
-                <DraggableWord
-                    key={word.id}
-                    word={word}
-                    onDragStart={() => { }}
-                    onDragEnd={onDragEnd}
-                    onDeselect={onDeselect}
-                    isSelected={selectedWordId === word.id}
-                    onSelect={onSelect}
-                />
+                <div
+                    onMouseDown={() => onSelect(word)} // Called when clicked
+                    onMouseUp={() => onDeselect()}
+                    onTouchStart={(_event) => {
+                        onSelect(word);
+                    }}
+                    onTouchEnd={() => onDeselect()}>
+                    <DraggableWord
+                        key={word.id}
+                        word={word}
+                        onDragStart={() => { }}
+                        onDragEnd={onDragEnd}
+                        onDeselect={onDeselect}
+                        isSelected={selectedWordId === word.id}
+                        onSelect={onSelect}
+                    />
+                </div>
             ))}
         </div>
     );
