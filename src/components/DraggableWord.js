@@ -52,8 +52,7 @@ const DraggableWord = ({ word, onDragEnd, isSelected, onSelect, onDeselect }) =>
             style={style}
             onMouseDown={() => onSelect(word)} // Called when clicked
             onMouseUp={() => onDeselect()}
-            onTouchStart={(event) => {
-                event.preventDefault();
+            onTouchStart={(_event) => {
                 onSelect(word);
             }}
             onTouchEnd={() => onDeselect()}
